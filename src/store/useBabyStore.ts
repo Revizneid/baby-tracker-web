@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Baby, FeedLog, SleepLog, DiaperLog, GrowthLog } from '@/types/database';
+import { Baby, FeedLog, SleepLog, DiaperLog, GrowthLog, PumpingLog, MilkStorage } from '@/types/database';
 import { babyService } from '@/lib/services/babyService';
 
 interface BabyState {
