@@ -20,6 +20,7 @@ interface BabyState {
   addSleep: (sleep: Omit<SleepLog, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   addDiaper: (diaper: Omit<DiaperLog, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   deleteLog: (table: string, id: string) => Promise<void>;
+  subscribeToLogs: (babyId: string) => () => void;
 }
 
 export const useBabyStore = create<BabyState>((set, get) => ({
