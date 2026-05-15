@@ -88,12 +88,12 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
   }[type];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="p-6 flex items-center justify-between border-b border-gray-100">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-md rounded-t-[32px] sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom sm:zoom-in duration-300">
+        <div className="p-5 sm:p-6 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center space-x-3">
             {config.icon}
-            <h2 className="text-xl font-bold text-gray-900">{config.title}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">{config.title}</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5 text-gray-500" />
@@ -213,10 +213,10 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full mt-6 py-4 bg-${config.color}-500 text-white rounded-2xl font-bold hover:bg-${config.color}-600 transition-all shadow-lg flex items-center justify-center space-x-2`}
+            className={`w-full mt-4 sm:mt-6 py-4 sm:py-5 bg-${config.color}-500 text-white rounded-2xl font-bold hover:bg-${config.color}-600 transition-all shadow-lg flex items-center justify-center space-x-2 active:scale-95`}
             style={{ backgroundColor: `var(--color-${config.color}-500)` }}
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Lưu nhật ký</span>}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span className="text-base sm:text-lg">Lưu nhật ký</span>}
           </button>
         </form>
       </div>

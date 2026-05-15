@@ -67,6 +67,26 @@ export const useBabyStore = create<BabyState>((set, get) => ({
     }
   },
 
+  subscribeToLogs: (babyId: string) => {
+    const { supabase } = require('@/lib/supabase');
+    
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', filter: `baby_id=eq.${babyId}` },
+        () => {
+          // Refresh logs when any change occurs
+          get().fetchLogs(babyId);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  },
+
   addFeed: async (feed) => {
     try {
       const newFeed = await babyService.addFeed(feed);
