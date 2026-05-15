@@ -121,6 +121,60 @@ export const babyService = {
     return data as GrowthLog;
   },
 
+  // Pumping
+  async getPumpingLogs() {
+    const { data, error } = await supabase
+      .from('pumping_logs')
+      .select('*')
+      .order('timestamp', { ascending: false });
+    if (error) throw error;
+    return data as PumpingLog[];
+  },
+
+  async addPumpingLog(log: Omit<PumpingLog, 'id' | 'user_id' | 'created_at'>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('pumping_logs')
+      .insert([{ ...log, user_id: user.id }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data as PumpingLog;
+  },
+
+  // Milk Storage
+  async getMilkStorage() {
+    const { data, error } = await supabase
+      .from('milk_storage')
+      .select('*')
+      .order('expires_at', { ascending: true });
+    if (error) throw error;
+    return data as MilkStorage[];
+  },
+
+  async addMilkStorage(item: Omit<MilkStorage, 'id' | 'user_id' | 'created_at'>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('milk_storage')
+      .insert([{ ...item, user_id: user.id }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data as MilkStorage;
+  },
+
+  async updateMilkStorage(id: string, patch: Partial<MilkStorage>) {
+    const { error } = await supabase
+      .from('milk_storage')
+      .update(patch)
+      .eq('id', id);
+    if (error) throw error;
+  },
+
   // Deletion helpers
   async deleteItem(table: string, id: string) {
     const { error } = await supabase

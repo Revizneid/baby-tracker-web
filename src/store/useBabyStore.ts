@@ -9,6 +9,8 @@ interface BabyState {
   sleeps: SleepLog[];
   diapers: DiaperLog[];
   growths: GrowthLog[];
+  pumpingLogs: PumpingLog[];
+  milkStorage: MilkStorage[];
   loading: boolean;
   error: string | null;
 
@@ -19,6 +21,9 @@ interface BabyState {
   addFeed: (feed: Omit<FeedLog, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   addSleep: (sleep: Omit<SleepLog, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   addDiaper: (diaper: Omit<DiaperLog, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
+  addPumping: (log: Omit<PumpingLog, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
+  addMilk: (item: Omit<MilkStorage, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
+  markMilkUsed: (id: string) => Promise<void>;
   deleteLog: (table: string, id: string) => Promise<void>;
   subscribeToLogs: (babyId: string) => () => void;
 }
@@ -30,6 +35,8 @@ export const useBabyStore = create<BabyState>((set, get) => ({
   sleeps: [],
   diapers: [],
   growths: [],
+  pumpingLogs: [],
+  milkStorage: [],
   loading: false,
   error: null,
 
@@ -56,13 +63,15 @@ export const useBabyStore = create<BabyState>((set, get) => ({
   fetchLogs: async (babyId) => {
     set({ loading: true });
     try {
-      const [feeds, sleeps, diapers, growths] = await Promise.all([
+      const [feeds, sleeps, diapers, growths, pumpingLogs, milkStorage] = await Promise.all([
         babyService.getFeeds(babyId),
         babyService.getSleepLogs(babyId),
         babyService.getDiaperLogs(babyId),
         babyService.getGrowthLogs(babyId),
+        babyService.getPumpingLogs(),
+        babyService.getMilkStorage(),
       ]);
-      set({ feeds, sleeps, diapers, growths, loading: false });
+      set({ feeds, sleeps, diapers, growths, pumpingLogs, milkStorage, loading: false });
     } catch (err: any) {
       set({ error: err.message, loading: false });
     }
@@ -83,6 +92,37 @@ export const useBabyStore = create<BabyState>((set, get) => ({
     try {
       const newFeed = await babyService.addFeed(feed);
       set((state) => ({ feeds: [newFeed, ...state.feeds] }));
+    } catch (err: any) {
+      set({ error: err.message });
+    }
+  },
+
+  addPumping: async (log) => {
+    try {
+      const newLog = await babyService.addPumpingLog(log);
+      set((state) => ({ pumpingLogs: [newLog, ...state.pumpingLogs] }));
+    } catch (err: any) {
+      set({ error: err.message });
+    }
+  },
+
+  addMilk: async (item) => {
+    try {
+      const newItem = await babyService.addMilkStorage(item);
+      set((state) => ({ milkStorage: [newItem, ...state.milkStorage] }));
+    } catch (err: any) {
+      set({ error: err.message });
+    }
+  },
+
+  markMilkUsed: async (id) => {
+    try {
+      await babyService.updateMilkStorage(id, { used: true });
+      set((state) => ({
+        milkStorage: state.milkStorage.map((m) =>
+          m.id === id ? { ...m, used: true } : m
+        ),
+      }));
     } catch (err: any) {
       set({ error: err.message });
     }

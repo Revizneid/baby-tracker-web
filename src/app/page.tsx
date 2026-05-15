@@ -3,17 +3,23 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useBabyStore } from '@/store/useBabyStore';
-import { LogOut, Plus, Baby as BabyIcon, History, Settings, Trash2, Clock, BarChart3 } from 'lucide-react';
+import { LogOut, Plus, Baby as BabyIcon, History, Settings, Trash2, Clock, BarChart3, Droplets, GlassWater } from 'lucide-react';
 import AddBabyModal from '@/components/modals/AddBabyModal';
 import LogModal from '@/components/modals/LogModal';
+import PumpingModal from '@/components/modals/PumpingModal';
 import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
+import MilkInventory from '@/components/milk/MilkInventory';
 
 export default function Home() {
   const { user, signOut } = useAuth();
-  const { babies, fetchBabies, currentBaby, setCurrentBaby, loading, feeds, sleeps, diapers, deleteLog } = useBabyStore();
+  const { 
+    babies, fetchBabies, currentBaby, setCurrentBaby, loading, 
+    feeds, sleeps, diapers, deleteLog 
+  } = useBabyStore();
   
   const [isAddBabyOpen, setIsAddBabyOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'history' | 'analytics'>('history');
+  const [isPumpingOpen, setIsPumpingOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'history' | 'analytics' | 'milk'>('history');
   const [logModal, setLogModal] = useState<{ isOpen: boolean; type: 'feed' | 'sleep' | 'diaper' }>({
     isOpen: false,
     type: 'feed',
@@ -25,7 +31,7 @@ export default function Home() {
     }
   }, [user, fetchBabies]);
 
-  // Handle Real-time subscription
+  // Handle Polling/Sync
   useEffect(() => {
     if (currentBaby) {
       const unsubscribe = useBabyStore.getState().subscribeToLogs(currentBaby.id);
@@ -52,21 +58,21 @@ export default function Home() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-12 h-12 bg-pink-200 rounded-full mb-4"></div>
-          <p className="text-gray-400">Đang tải dữ liệu...</p>
+          <p className="text-gray-400 font-medium">Đang tải dữ liệu...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center shadow-sm">
               <BabyIcon className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl text-gray-900">BabyTracker</span>
+            <span className="font-bold text-xl text-gray-900 hidden sm:inline">BabyTracker</span>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -132,7 +138,7 @@ export default function Home() {
               </div>
 
               {/* Quick Actions */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
                 <button 
                   onClick={() => setLogModal({ isOpen: true, type: 'feed' })}
                   className="bg-orange-50 p-3 sm:p-4 rounded-2xl border border-orange-100 text-center hover:bg-orange-100 transition-all group"
@@ -140,7 +146,7 @@ export default function Home() {
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-1 sm:mb-2 text-white shadow-lg group-hover:scale-110 transition-transform">
                     🍼
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-orange-900">Ăn</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-orange-900">Ăn uống</span>
                 </button>
                 <button 
                   onClick={() => setLogModal({ isOpen: true, type: 'sleep' })}
@@ -149,7 +155,7 @@ export default function Home() {
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-1 sm:mb-2 text-white shadow-lg group-hover:scale-110 transition-transform">
                     💤
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-purple-900">Ngủ</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-purple-900">Ngủ nghỉ</span>
                 </button>
                 <button 
                   onClick={() => setLogModal({ isOpen: true, type: 'diaper' })}
@@ -158,35 +164,42 @@ export default function Home() {
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-1 sm:mb-2 text-white shadow-lg group-hover:scale-110 transition-transform">
                     🚽
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-blue-900">Tã</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-blue-900">Vệ sinh</span>
+                </button>
+                <button 
+                  onClick={() => setIsPumpingOpen(true)}
+                  className="bg-pink-50 p-3 sm:p-4 rounded-2xl border border-pink-100 text-center hover:bg-pink-100 transition-all group"
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-1 sm:mb-2 text-white shadow-lg group-hover:scale-110 transition-transform">
+                    <GlassWater className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] sm:text-xs font-bold text-pink-900">Hút sữa</span>
                 </button>
               </div>
             </div>
 
             <div className="md:col-span-2 space-y-4 sm:space-y-6">
               {/* Tab Selector */}
-              <div className="bg-white p-1 rounded-2xl shadow-sm border border-gray-100 flex">
-                <button
-                  onClick={() => setActiveTab('history')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl font-bold transition-all ${
-                    activeTab === 'history' ? 'bg-pink-500 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  <History className="w-4 h-4" />
-                  Lịch sử
-                </button>
-                <button
-                  onClick={() => setActiveTab('analytics')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl font-bold transition-all ${
-                    activeTab === 'analytics' ? 'bg-pink-500 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  Thống kê
-                </button>
+              <div className="bg-white p-1 rounded-2xl shadow-sm border border-gray-100 flex overflow-x-auto scrollbar-hide">
+                {[
+                  { id: 'history', label: 'Lịch sử', icon: <History className="w-4 h-4" /> },
+                  { id: 'analytics', label: 'Thống kê', icon: <BarChart3 className="w-4 h-4" /> },
+                  { id: 'milk', label: 'Kho sữa', icon: <Droplets className="w-4 h-4" /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 rounded-xl font-bold transition-all whitespace-nowrap ${
+                      activeTab === tab.id ? 'bg-pink-500 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
-              {activeTab === 'history' ? (
+              {activeTab === 'history' && (
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 min-h-[400px] overflow-hidden">
                   <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between">
                     <h2 className="font-bold text-lg sm:text-xl flex items-center gap-2 text-gray-800">
@@ -228,11 +241,10 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="px-0 sm:px-0">
-                  <AnalyticsDashboard />
-                </div>
               )}
+
+              {activeTab === 'analytics' && <AnalyticsDashboard />}
+              {activeTab === 'milk' && <MilkInventory />}
             </div>
           </div>
         )}
@@ -244,6 +256,7 @@ export default function Home() {
         onClose={() => setLogModal({ ...logModal, isOpen: false })} 
         type={logModal.type} 
       />
+      <PumpingModal isOpen={isPumpingOpen} onClose={() => setIsPumpingOpen(false)} />
     </div>
   );
 }
