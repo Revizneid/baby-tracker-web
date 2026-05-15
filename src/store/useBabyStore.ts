@@ -68,22 +68,13 @@ export const useBabyStore = create<BabyState>((set, get) => ({
   },
 
   subscribeToLogs: (babyId: string) => {
-    const { supabase } = require('@/lib/supabase');
-    
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', filter: `baby_id=eq.${babyId}` },
-        () => {
-          // Refresh logs when any change occurs
-          get().fetchLogs(babyId);
-        }
-      )
-      .subscribe();
+    // Polling fallback: Refresh data every 30 seconds instead of using Realtime Replication
+    const interval = setInterval(() => {
+      get().fetchLogs(babyId);
+    }, 30000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   },
 
