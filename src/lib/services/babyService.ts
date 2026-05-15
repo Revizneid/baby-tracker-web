@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { Baby, FeedLog, SleepLog, DiaperLog, GrowthLog } from '@/types/database';
+import { Baby, FeedLog, SleepLog, DiaperLog, GrowthLog, PumpingLog, MilkStorage } from '@/types/database';
 
 export const babyService = {
   // Babies
