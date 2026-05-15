@@ -28,7 +28,7 @@ export default function Home() {
   // Combine and sort logs for history
   const allLogs = [
     ...feeds.map(f => ({ ...f, logType: 'feed', icon: '🍼', label: 'Ăn uống', color: 'orange' })),
-    ...sleeps.map(s => ({ ...s, logType: 'sleep', icon: '💤', label: 'Ngủ nghỉ', color: 'purple' })),
+    ...sleeps.map(s => ({ ...s, timestamp: s.start_timestamp, logType: 'sleep', icon: '💤', label: 'Ngủ nghỉ', color: 'purple' })),
     ...diapers.map(d => ({ ...d, logType: 'diaper', icon: '👶', label: 'Vệ sinh', color: 'blue' })),
   ].sort((a, b) => b.timestamp - a.timestamp);
 
