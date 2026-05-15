@@ -1,65 +1,239 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { useBabyStore } from '@/store/useBabyStore';
+import { LogOut, Plus, Baby as BabyIcon, History, Settings, Trash2, Clock, BarChart3 } from 'lucide-react';
+import AddBabyModal from '@/components/modals/AddBabyModal';
+import LogModal from '@/components/modals/LogModal';
+import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
 
 export default function Home() {
+  const { user, signOut } = useAuth();
+  const { babies, fetchBabies, currentBaby, setCurrentBaby, loading, feeds, sleeps, diapers, deleteLog } = useBabyStore();
+  
+  const [isAddBabyOpen, setIsAddBabyOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'history' | 'analytics'>('history');
+  const [logModal, setLogModal] = useState<{ isOpen: boolean; type: 'feed' | 'sleep' | 'diaper' }>({
+    isOpen: false,
+    type: 'feed',
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchBabies();
+    }
+  }, [user, fetchBabies]);
+
+  // Combine and sort logs for history
+  const allLogs = [
+    ...feeds.map(f => ({ ...f, logType: 'feed', icon: '🍼', label: 'Ăn uống', color: 'orange' })),
+    ...sleeps.map(s => ({ ...s, logType: 'sleep', icon: '💤', label: 'Ngủ nghỉ', color: 'purple' })),
+    ...diapers.map(d => ({ ...d, logType: 'diaper', icon: '👶', label: 'Vệ sinh', color: 'blue' })),
+  ].sort((a, b) => b.timestamp - a.timestamp);
+
+  const getLogLabel = (log: any) => {
+    if (log.logType === 'feed') return `${log.type === 'formula' ? 'Sữa công thức' : 'Bú mẹ'} - ${log.amount}ml`;
+    if (log.logType === 'sleep') return `Giấc ${log.type === 'nap' ? 'ngày' : 'đêm'}`;
+    if (log.logType === 'diaper') return `Tã ${log.type === 'wet' ? 'ướt' : log.type === 'dirty' ? 'bẩn' : 'sạch'}`;
+    return '';
+  };
+
+  if (loading && babies.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 bg-pink-200 rounded-full mb-4"></div>
+          <p className="text-gray-400">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center shadow-sm">
+              <BabyIcon className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-bold text-xl text-gray-900">BabyTracker</span>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => signOut()}
+              className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+              title="Đăng xuất"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        {babies.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200 shadow-sm">
+            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Plus className="w-8 h-8 text-gray-400" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Chưa có thông tin em bé</h2>
+            <p className="text-gray-500 mt-2">Hãy thêm thành viên mới để bắt đầu theo dõi</p>
+            <button 
+              onClick={() => setIsAddBabyOpen(true)}
+              className="mt-6 px-6 py-3 bg-pink-500 text-white rounded-xl font-bold hover:bg-pink-600 transition-all shadow-lg shadow-pink-200"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              Thêm em bé
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 space-y-6">
+              {/* Baby Selection */}
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-400 text-sm uppercase tracking-wider">Em bé của bạn</h3>
+                  <button onClick={() => setIsAddBabyOpen(true)} className="text-pink-500 hover:text-pink-600">
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {babies.map(baby => (
+                    <button
+                      key={baby.id}
+                      onClick={() => setCurrentBaby(baby)}
+                      className={`w-full flex items-center space-x-3 p-3 rounded-2xl transition-all ${
+                        currentBaby?.id === baby.id 
+                          ? 'bg-pink-50 border-2 border-pink-500 ring-4 ring-pink-50' 
+                          : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm">
+                        {baby.gender === 'male' ? '👦' : baby.gender === 'female' ? '👧' : '👶'}
+                      </div>
+                      <div className="text-left">
+                        <p className={`font-bold ${currentBaby?.id === baby.id ? 'text-pink-700' : 'text-gray-700'}`}>
+                          {baby.name}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-3 gap-3">
+                <button 
+                  onClick={() => setLogModal({ isOpen: true, type: 'feed' })}
+                  className="bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center hover:bg-orange-100 transition-all group"
+                >
+                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-lg group-hover:scale-110 transition-transform">
+                    🍼
+                  </div>
+                  <span className="text-xs font-bold text-orange-900">Ăn</span>
+                </button>
+                <button 
+                  onClick={() => setLogModal({ isOpen: true, type: 'sleep' })}
+                  className="bg-purple-50 p-4 rounded-2xl border border-purple-100 text-center hover:bg-purple-100 transition-all group"
+                >
+                  <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-lg group-hover:scale-110 transition-transform">
+                    💤
+                  </div>
+                  <span className="text-xs font-bold text-purple-900">Ngủ</span>
+                </button>
+                <button 
+                  onClick={() => setLogModal({ isOpen: true, type: 'diaper' })}
+                  className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center hover:bg-blue-100 transition-all group"
+                >
+                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-lg group-hover:scale-110 transition-transform">
+                    🚽
+                  </div>
+                  <span className="text-xs font-bold text-blue-900">Tã</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 space-y-6">
+              {/* Tab Selector */}
+              <div className="bg-white p-1 rounded-2xl shadow-sm border border-gray-100 flex">
+                <button
+                  onClick={() => setActiveTab('history')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${
+                    activeTab === 'history' ? 'bg-pink-500 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  <History className="w-4 h-4" />
+                  Lịch sử
+                </button>
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${
+                    activeTab === 'analytics' ? 'bg-pink-500 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  Thống kê
+                </button>
+              </div>
+
+              {activeTab === 'history' ? (
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 min-h-[400px] overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <h2 className="font-bold text-xl flex items-center gap-2 text-gray-800">
+                      <History className="w-5 h-5 text-pink-500" />
+                      Lịch sử hoạt động
+                    </h2>
+                  </div>
+                  
+                  {allLogs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-80 text-gray-400">
+                      <History className="w-12 h-12 mb-3 opacity-20" />
+                      <p>Chưa có hoạt động nào được ghi lại</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-50">
+                      {allLogs.map((log: any) => (
+                        <div key={log.id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between group">
+                          <div className="flex items-center space-x-4">
+                            <div className={`w-12 h-12 bg-${log.color}-50 rounded-2xl flex items-center justify-center text-2xl`}>
+                              {log.icon}
+                            </div>
+                            <div>
+                              <p className="font-bold text-gray-800">{getLogLabel(log)}</p>
+                              <div className="flex items-center text-xs text-gray-400 mt-1">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {log.time} • {new Date(log.date).toLocaleDateString('vi-VN')}
+                              </div>
+                              {log.note && <p className="text-sm text-gray-500 mt-1 italic">"{log.note}"</p>}
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => deleteLog(log.logType === 'feed' ? 'feeds' : log.logType === 'sleep' ? 'sleep_logs' : 'diaper_logs', log.id)}
+                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <AnalyticsDashboard />
+              )}
+            </div>
+          </div>
+        )}
       </main>
+
+      <AddBabyModal isOpen={isAddBabyOpen} onClose={() => setIsAddBabyOpen(false)} />
+      <LogModal 
+        isOpen={logModal.isOpen} 
+        onClose={() => setLogModal({ ...logModal, isOpen: false })} 
+        type={logModal.type} 
+      />
     </div>
   );
 }
