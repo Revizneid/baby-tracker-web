@@ -2,7 +2,7 @@
 
 import { useBabyStore } from '@/store/useBabyStore';
 import { MilkStorage } from '@/types/database';
-import { Droplets, Calendar, Trash2, CheckCircle2, AlertCircle, Snowflakex, Refrigerator } from 'lucide-react';
+import { Droplets, Calendar, Trash2, CheckCircle2, AlertCircle, Snowflake, Refrigerator } from 'lucide-react';
 import { format, isAfter, isBefore, addDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
@@ -74,7 +74,7 @@ export default function MilkInventory() {
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm ${
                       item.stored_at === 'fridge' ? 'bg-teal-50 text-teal-600' : 'bg-blue-50 text-blue-600'
                     }`}>
-                      {item.stored_at === 'fridge' ? <Refrigerator className="w-6 h-6" /> : <Snowflakex className="w-6 h-6" />}
+                      {item.stored_at === 'fridge' ? <Refrigerator className="w-6 h-6" /> : <Snowflake className="w-6 h-6" />}
                     </div>
                     <div>
                       <div className="flex items-center space-x-2">

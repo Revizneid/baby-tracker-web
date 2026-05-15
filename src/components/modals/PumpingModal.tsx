@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useBabyStore } from '@/store/useBabyStore';
-import { X, Loader2, Clock, GlassWater, Refrigerator, Snowflakex, Save } from 'lucide-react';
+import { X, Loader2, Clock, GlassWater, Refrigerator, Snowflake, Save } from 'lucide-react';
 import { addDays, addMonths, format } from 'date-fns';
 
 interface PumpingModalProps {
@@ -117,7 +117,7 @@ export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
               {[
                 { id: 'none', label: 'Không lưu', icon: <X className="w-4 h-4" /> },
                 { id: 'fridge', label: 'Ngăn mát', icon: <Refrigerator className="w-4 h-4" /> },
-                { id: 'freezer', label: 'Ngăn đông', icon: <Snowflakex className="w-4 h-4" /> },
+                { id: 'freezer', label: 'Ngăn đông', icon: <Snowflake className="w-4 h-4" /> },
               ].map((opt) => (
                 <button
                   key={opt.id}
