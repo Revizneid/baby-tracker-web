@@ -1,8 +1,24 @@
 import { supabase } from '../supabase';
-import { Baby, FeedLog, SleepLog, DiaperLog, GrowthLog, PumpingLog, MilkStorage } from '@/types/database';
+import { 
+  Baby, 
+  FeedLog, 
+  SleepLog, 
+  DiaperLog, 
+  GrowthLog, 
+  PumpingLog, 
+  MilkStorage,
+  Profile,
+  FamilyMember,
+  FamilyInvite,
+  VaccineRecord,
+  Reminder,
+  WaterLog
+} from '@/types/database';
 
 export const babyService = {
-  // Babies
+  // =========================================================================
+  // BABIES
+  // =========================================================================
   async getBabies() {
     const { data, error } = await supabase
       .from('babies')
@@ -25,7 +41,108 @@ export const babyService = {
     return data as Baby;
   },
 
-  // Feeds
+  // =========================================================================
+  // PROFILES
+  // =========================================================================
+  async getProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    if (error) throw error;
+    return data as Profile;
+  },
+
+  async updateProfile(patch: Partial<Profile>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(patch)
+      .eq('id', user.id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Profile;
+  },
+
+  // =========================================================================
+  // FAMILY MEMBERS & INVITES
+  // =========================================================================
+  async getFamilyMembers(babyId: string) {
+    const { data, error } = await supabase
+      .from('family_members')
+      .select('*, profiles(*)')
+      .eq('baby_id', babyId);
+    if (error) throw error;
+    return data;
+  },
+
+  async removeFamilyMember(memberId: string) {
+    const { error } = await supabase
+      .from('family_members')
+      .delete()
+      .eq('id', memberId);
+    if (error) throw error;
+  },
+
+  async createInvite(babyId: string) {
+    const { data, error } = await supabase
+      .from('family_invites')
+      .insert([{ baby_id: babyId }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data as FamilyInvite;
+  },
+
+  async getInvite(token: string) {
+    const { data, error } = await supabase
+      .from('family_invites')
+      .select('*, babies(name)')
+      .eq('token', token)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async acceptInvite(token: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const invite = await this.getInvite(token);
+    if (!invite || invite.used_at || new Date(invite.expires_at) < new Date()) {
+      throw new Error('Lời mời không hợp lệ, đã được sử dụng hoặc hết hạn.');
+    }
+
+    // Insert family member
+    const { error: memberError } = await supabase
+      .from('family_members')
+      .insert([{ baby_id: invite.baby_id, user_id: user.id, role: 'member' }]);
+    
+    // Ignore duplicate key errors if already a member
+    if (memberError && memberError.code !== '23505') {
+      throw memberError;
+    }
+
+    // Mark invite as used
+    const { error: inviteError } = await supabase
+      .from('family_invites')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', invite.id);
+    if (inviteError) throw inviteError;
+
+    return invite.baby_id;
+  },
+
+  // =========================================================================
+  // FEEDS (Note: Keeps existing feeds table name)
+  // =========================================================================
   async getFeeds(babyId: string) {
     const { data, error } = await supabase
       .from('feeds')
@@ -49,7 +166,9 @@ export const babyService = {
     return data as FeedLog;
   },
 
-  // Sleep
+  // =========================================================================
+  // SLEEP LOGS
+  // =========================================================================
   async getSleepLogs(babyId: string) {
     const { data, error } = await supabase
       .from('sleep_logs')
@@ -73,7 +192,9 @@ export const babyService = {
     return data as SleepLog;
   },
 
-  // Diapers
+  // =========================================================================
+  // DIAPER LOGS
+  // =========================================================================
   async getDiaperLogs(babyId: string) {
     const { data, error } = await supabase
       .from('diaper_logs')
@@ -97,7 +218,9 @@ export const babyService = {
     return data as DiaperLog;
   },
 
-  // Growth
+  // =========================================================================
+  // GROWTH LOGS
+  // =========================================================================
   async getGrowthLogs(babyId: string) {
     const { data, error } = await supabase
       .from('growth_logs')
@@ -121,7 +244,9 @@ export const babyService = {
     return data as GrowthLog;
   },
 
-  // Pumping
+  // =========================================================================
+  // PUMPING LOGS (Note: Keeps existing pumping_logs table name)
+  // =========================================================================
   async getPumpingLogs() {
     const { data, error } = await supabase
       .from('pumping_logs')
@@ -144,7 +269,9 @@ export const babyService = {
     return data as PumpingLog;
   },
 
-  // Milk Storage
+  // =========================================================================
+  // MILK STORAGE
+  // =========================================================================
   async getMilkStorage() {
     const { data, error } = await supabase
       .from('milk_storage')
@@ -175,7 +302,125 @@ export const babyService = {
     if (error) throw error;
   },
 
-  // Deletion helpers
+  // =========================================================================
+  // VACCINE RECORDS
+  // =========================================================================
+  async getVaccineRecords(babyId: string) {
+    const { data, error } = await supabase
+      .from('vaccine_records')
+      .select('*')
+      .eq('baby_id', babyId)
+      .order('vacc_date', { ascending: false });
+    if (error) throw error;
+    return data as VaccineRecord[];
+  },
+
+  async upsertVaccineRecord(record: Omit<VaccineRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('vaccine_records')
+      .upsert({ ...record, user_id: user.id })
+      .select()
+      .single();
+    if (error) throw error;
+    return data as VaccineRecord;
+  },
+
+  async deleteVaccineRecord(id: string) {
+    const { error } = await supabase
+      .from('vaccine_records')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  // =========================================================================
+  // REMINDERS
+  // =========================================================================
+  async getReminders(babyId: string) {
+    const { data, error } = await supabase
+      .from('reminders')
+      .select('*')
+      .eq('baby_id', babyId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data as Reminder[];
+  },
+
+  async addReminder(reminder: Omit<Reminder, 'id' | 'user_id' | 'created_at' | 'updated_at'>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('reminders')
+      .insert([{ ...reminder, user_id: user.id }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Reminder;
+  },
+
+  async updateReminder(id: string, patch: Partial<Reminder>) {
+    const { data, error } = await supabase
+      .from('reminders')
+      .update(patch)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Reminder;
+  },
+
+  async deleteReminder(id: string) {
+    const { error } = await supabase
+      .from('reminders')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  // =========================================================================
+  // WATER LOGS (Mother)
+  // =========================================================================
+  async getWaterLogs() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('water_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('logged_at', { ascending: false });
+    if (error) throw error;
+    return data as WaterLog[];
+  },
+
+  async addWaterLog(amountMl: number) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('water_logs')
+      .insert([{ amount_ml: amountMl, user_id: user.id }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data as WaterLog;
+  },
+
+  async deleteWaterLog(id: string) {
+    const { error } = await supabase
+      .from('water_logs')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  // =========================================================================
+  // DELETION HELPERS
+  // =========================================================================
   async deleteItem(table: string, id: string) {
     const { error } = await supabase
       .from(table)
