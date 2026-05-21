@@ -8,8 +8,7 @@ export async function createServerClient() {
   const cookieStore = await cookies();
   
   // Extract project id from Supabase URL to match client-side cookie name
-  const match = supabaseUrl.match(/https:\/\/([a-z0-9\-]+)\.supabase/);
-  const projectId = match ? match[1] : '';
+  const projectId = supabaseUrl ? new URL(supabaseUrl).hostname.split('.')[0] : '';
   const cookieName = `sb-${projectId}-auth-token`;
   
   const tokenCookie = cookieStore.get(cookieName);

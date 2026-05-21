@@ -49,8 +49,7 @@ export default function OAuthCallbackPage() {
           throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured.');
         }
 
-        const match = supabaseUrl.match(/https:\/\/([a-z0-9\-]+)\.supabase/);
-        const projectId = match ? match[1] : '';
+        const projectId = new URL(supabaseUrl).hostname.split('.')[0];
         if (!projectId) {
           throw new Error(`Unable to extract Supabase project ID from ${supabaseUrl}`);
         }

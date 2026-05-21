@@ -13,8 +13,7 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
   // Extract project id from Supabase URL to match cookie name
-  const match = supabaseUrl.match(/https:\/\/([a-z0-9\-]+)\.supabase/);
-  const projectId = match ? match[1] : '';
+  const projectId = supabaseUrl ? new URL(supabaseUrl).hostname.split('.')[0] : '';
   const cookieName = `sb-${projectId}-auth-token`;
 
   const tokenCookie = request.cookies.get(cookieName);
