@@ -26,18 +26,16 @@ export default function LoginPage() {
       try {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
-          const fallback = await supabase.auth.getSessionFromUrl();
-          if (fallback.error) {
-            throw fallback.error;
-          }
-          if (fallback.data?.session) {
-            router.replace('/');
-            return;
-          }
           throw error;
         }
         if (data?.session) {
           router.replace('/');
+        } else {
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError) throw sessionError;
+          if (sessionData?.session) {
+            router.replace('/');
+          }
         }
       } catch (err: any) {
         setError(err.message || 'Đăng nhập Google thất bại.');
