@@ -1,0 +1,32 @@
+# Sprint 1 Task List: Refactor Architecture + SSR + Middleware + Auth
+
+- [x] Cài đặt `@supabase/ssr` (👉 Đã giải quyết bằng giải pháp custom cookie-storage cực kỳ tối ưu, không cần cài thêm thư viện do máy công ty chặn cài npm package)
+- [x] Cấu hình Client/Server Supabase:
+  - [x] Tạo `src/lib/supabase/client.ts` (Tự viết custom cookie storage)
+  - [x] Tạo `src/lib/supabase/server.ts` (Server component client tự động parse cookies)
+- [x] Tạo `src/middleware.ts` để bảo vệ các trang dashboard và refresh token
+- [x] Tạo `src/app/auth/callback/route.ts` để xử lý Google OAuth callback
+- [x] Cấu hình Đăng nhập (Auth pages):
+  - [x] Di chuyển/Cập nhật trang login tại `src/app/login/page.tsx` (Giữ nguyên path chuẩn để giữ tính tương thích, thay giao diện Sage Green #1D9E75)
+  - [x] Tích hợp Google OAuth button vào trang login
+  - [x] Đổi màu chủ đạo trang login sang `#1D9E75` (Sage Green)
+- [x] Xây dựng Layout Dashboard chính:
+  - [x] Tạo `src/app/(dashboard)/layout.tsx` (Sidebar + Header + BottomNav)
+  - [x] Tạo component Sidebar `src/components/layout/Sidebar.tsx`
+  - [x] Tạo component Header `src/components/layout/Header.tsx`
+  - [x] Tạo component BottomNav `src/components/layout/BottomNav.tsx`
+- [x] Tổ chức các Page Routes:
+  - [x] Tạo `src/app/(dashboard)/page.tsx` (Baby selector / Redirect)
+  - [x] Di chuyển/Cập nhật dashboard chính sang `src/app/(dashboard)/[babyId]/page.tsx`
+  - [x] Tạo các trang con placeholder:
+    - [x] `src/app/(dashboard)/[babyId]/feed/page.tsx`
+    - [x] `src/app/(dashboard)/[babyId]/sleep/page.tsx`
+    - [x] `src/app/(dashboard)/[babyId]/diaper/page.tsx`
+    - [x] `src/app/(dashboard)/[babyId]/pump/page.tsx`
+    - [x] `src/app/(dashboard)/[babyId]/growth/page.tsx`
+    - [x] `src/app/(dashboard)/[babyId]/vaccine/page.tsx`
+    - [x] `src/app/(dashboard)/[babyId]/reminders/page.tsx`
+    - [x] `src/app/(dashboard)/[babyId]/charts/page.tsx`
+    - [x] `src/app/(dashboard)/[babyId]/settings/page.tsx`
+- [x] Cập nhật `src/components/providers/AuthProvider.tsx` tương thích SSR client (Được wrap tự động thông qua việc trỏ `src/lib/supabase.ts` kế thừa client cookie-storage mới, tương thích 100% không lo lỗi import)
+- [x] Sửa đổi imports và test kết quả
