@@ -23,9 +23,16 @@ export async function middleware(request: NextRequest) {
     try {
       const rawValue = decodeURIComponent(tokenCookie.value);
       session = JSON.parse(rawValue);
+      console.log('[Middleware] Session found:', { cookieName, hasAccessToken: !!session?.access_token });
     } catch (e) {
-      console.error('Middleware cookie parse error:', e);
+      console.error('[Middleware] Cookie parse error:', { cookieName, error: e });
     }
+  } else {
+    console.log('[Middleware] No auth cookie found:', {
+      cookieName,
+      availableCookies: Array.from(request.cookies.entries()).map(([k]) => k),
+      projectId
+    });
   }
 
   // Create response

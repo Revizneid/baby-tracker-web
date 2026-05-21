@@ -29,39 +29,34 @@ export default function OAuthCallbackPage() {
       setLoading(true);
 
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        let session = sessionData?.session;
-
-        if (!session) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) {
-            throw new Error(JSON.stringify(error));
-          }
-          session = data?.session;
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          throw new Error(JSON.stringify(error));
         }
 
-        if (!session) {
+        if (!data?.session) {
           throw new Error('Không thể xác thực phiên đăng nhập.');
         }
 
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-        if (!supabaseUrl) {
-          throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured.');
-        }
+        console.log('[Callback] Session exchanged:', {
+          accessToken: data.session.access_token?.substring(0, 10) + '...',
+          expiresAt: data.session.expires_at,
+          user: data.session.user?.email,
+        });
 
-        const projectId = new URL(supabaseUrl).hostname.split('.')[0];
-        if (!projectId) {
-          throw new Error(`Unable to extract Supabase project ID from ${supabaseUrl}`);
-        }
-
-        const cookieName = `sb-${projectId}-auth-token`;
-        const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
-        document.cookie = `${cookieName}=${encodeURIComponent(JSON.stringify(session))};expires=${expires};path=/;SameSite=None;Secure`;
-
+        // Supabase client storage adapter should have persisted the session
         window.localStorage.removeItem('supabase_oauth_next');
-        window.location.replace(nextPath.startsWith('/') ? nextPath : '/');
+        
+        // Verify cookie was written
+        const cookieValue = document.cookie.split(';').find(c => c.includes('sb-') && c.includes('auth-token'));
+        console.log('[Callback] Cookie after exchange:', { cookieSet: !!cookieValue });
+        
+        // Add a small delay to ensure cookie is written before redirecting
+        setTimeout(() => {
+          window.location.replace(nextPath.startsWith('/') ? nextPath : '/');
+        }, 100);
       } catch (err: any) {
-        console.error('OAuth callback error:', err);
+        console.error('[Callback] OAuth error:', err);
         setError(err?.message ? String(err.message) : String(err));
       } finally {
         setLoading(false);
