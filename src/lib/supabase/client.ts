@@ -7,8 +7,45 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase URL or Anon Key is missing. Please check your .env.local file.');
 }
 
+// Hybrid storage: PKCE verifier in cookies, session in cookies
+const hybridStorage = {
+  getItem: (key: string) => {
+    if (typeof document === 'undefined') return null;
+    
+    const name = `${key}=`;
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith(name)) {
+        const value = cookie.substring(name.length);
+        try {
+          return decodeURIComponent(value);
+        } catch {
+          return value;
+        }
+      }
+    }
+    return null;
+  },
+  setItem: (key: string, value: string) => {
+    if (typeof document === 'undefined') return;
+    
+    const encodedValue = encodeURIComponent(value);
+    const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+    
+    // Store in cookies with SameSite=None for cross-site OAuth redirect
+    document.cookie = `${key}=${encodedValue};expires=${expires};path=/;SameSite=None;Secure`;
+  },
+  removeItem: (key: string) => {
+    if (typeof document === 'undefined') return;
+    
+    document.cookie = `${key}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+  }
+};
+
 export const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
+    storage: hybridStorage,
     flowType: 'pkce',
     persistSession: true,
   }
