@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Heart, Mail, Lock, Loader2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,10 +14,10 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [showGuide, setShowGuide] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const code = searchParams.get('code');
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
     if (!code) return;
 
     const completeOAuth = async () => {
@@ -45,7 +45,7 @@ export default function LoginPage() {
     };
 
     completeOAuth();
-  }, [searchParams, router]);
+  }, [router]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
