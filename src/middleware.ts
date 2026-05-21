@@ -22,7 +22,8 @@ export async function middleware(request: NextRequest) {
 
   if (tokenCookie?.value) {
     try {
-      session = JSON.parse(tokenCookie.value);
+      const rawValue = decodeURIComponent(tokenCookie.value);
+      session = JSON.parse(rawValue);
     } catch (e) {
       console.error('Middleware cookie parse error:', e);
     }

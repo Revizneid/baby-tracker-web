@@ -25,10 +25,10 @@ export async function GET(request: NextRequest) {
       const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
       const response = NextResponse.redirect(new URL(next, request.url));
       
-      response.cookies.set(cookieName, JSON.stringify(data.session), {
+      response.cookies.set(cookieName, encodeURIComponent(JSON.stringify(data.session)), {
         path: '/',
         expires,
-        sameSite: 'lax',
+        sameSite: 'none',
         secure: true
       });
       
