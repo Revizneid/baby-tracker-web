@@ -10,18 +10,26 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const cookieStorage = {
   getItem: (key: string) => {
     if (typeof document === 'undefined') return null;
-    const name = key + '=';
-    const ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i].trim();
-      if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+    const name = `${key}=`;
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith(name)) {
+        const value = cookie.substring(name.length);
+        try {
+          return decodeURIComponent(value);
+        } catch {
+          return value;
+        }
+      }
     }
     return null;
   },
   setItem: (key: string, value: string) => {
     if (typeof document === 'undefined') return;
+    const encodedValue = encodeURIComponent(value);
     const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `${key}=${value};expires=${expires};path=/;SameSite=Lax;Secure`;
+    document.cookie = `${key}=${encodedValue};expires=${expires};path=/;SameSite=Lax;Secure`;
   },
   removeItem: (key: string) => {
     if (typeof document === 'undefined') return;

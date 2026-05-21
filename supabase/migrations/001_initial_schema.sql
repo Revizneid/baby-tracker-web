@@ -338,12 +338,20 @@ BEGIN
         WHERE table_schema = 'public' 
           AND table_name IN ('feeds', 'sleep_logs', 'diaper_logs', 'growth_logs', 'pumping_logs', 'milk_storage', 'vaccine_records', 'reminders')
     LOOP
-        EXECUTE format('
-            CREATE POLICY %I ON public.%I
-                FOR ALL
-                USING (public.is_baby_member(baby_id, auth.uid()))
-                WITH CHECK (public.is_baby_member(baby_id, auth.uid()));
-        ', 'Manage ' || t || ' for shared baby', t);
+        IF EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = t
+              AND column_name = 'baby_id'
+        ) THEN
+            EXECUTE format('
+                CREATE POLICY %I ON public.%I
+                    FOR ALL
+                    USING (public.is_baby_member(baby_id, auth.uid()))
+                    WITH CHECK (public.is_baby_member(baby_id, auth.uid()));
+            ', 'Manage ' || t || ' for shared baby', t);
+        END IF;
     END LOOP;
 END;
 $$;
