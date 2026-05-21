@@ -1,20 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 export default function OAuthCallbackPage() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [debugCode, setDebugCode] = useState<string | null>(null);
+  const [debugNext, setDebugNext] = useState<string>('/');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const storedNext = window.localStorage.getItem('supabase_oauth_next');
     const nextPath = storedNext || params.get('next') || '/';
+    setDebugCode(code);
+    setDebugNext(nextPath);
 
     if (!code) {
       setError('Không tìm thấy mã xác thực Google.');
@@ -27,14 +29,19 @@ export default function OAuthCallbackPage() {
       setLoading(true);
 
       try {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          throw new Error(JSON.stringify(error));
+        const { data: sessionData } = await supabase.auth.getSession();
+        let session = sessionData?.session;
+
+        if (!session) {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            throw new Error(JSON.stringify(error));
+          }
+          session = data?.session;
         }
 
-        const session = data?.session ?? (await supabase.auth.getSession()).data?.session;
         if (!session) {
-          throw new Error(`Không thể xác thực phiên đăng nhập. exchange data=${JSON.stringify(data)}`);
+          throw new Error('Không thể xác thực phiên đăng nhập.');
         }
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -53,7 +60,7 @@ export default function OAuthCallbackPage() {
         document.cookie = `${cookieName}=${encodeURIComponent(JSON.stringify(session))};expires=${expires};path=/;SameSite=None;Secure`;
 
         window.localStorage.removeItem('supabase_oauth_next');
-        router.replace(nextPath.startsWith('/') ? nextPath : '/');
+        window.location.replace(nextPath.startsWith('/') ? nextPath : '/');
       } catch (err: any) {
         console.error('OAuth callback error:', err);
         setError(err?.message ? String(err.message) : String(err));
@@ -63,7 +70,7 @@ export default function OAuthCallbackPage() {
     };
 
     completeOAuth();
-  }, [router]);
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F5F7F5] p-4">
@@ -73,9 +80,21 @@ export default function OAuthCallbackPage() {
           <p className="text-sm text-gray-500">Bạn sẽ được chuyển tiếp ngay khi hoàn tất xác thực.</p>
           {loading && <Loader2 className="w-10 h-10 mx-auto animate-spin text-[#1D9E75]" />}
           {error && (
-            <div className="mt-4 p-4 rounded-2xl bg-red-50 text-red-700 border border-red-100 text-sm flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 mt-0.5" />
-              <span>{error}</span>
+            <div className="mt-4 p-4 rounded-2xl bg-red-50 text-red-700 border border-red-100 text-sm flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 mt-0.5" />
+                <span>{error}</span>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-xl p-3 text-xs text-gray-500">
+                <div><strong>Debug:</strong></div>
+                <div>code: <span className="font-mono">{debugCode ?? 'null'}</span></div>
+                <div>next: <span className="font-mono">{debugNext}</span></div>
+              </div>
+            </div>
+          )}
+          {!loading && !error && (
+            <div className="mt-4 p-4 rounded-2xl bg-green-50 text-green-700 border border-green-100 text-sm">
+              Đã nhận được mã, đang chuyển hướng... Nếu trang đứng yên, thử làm mới hoặc kiểm tra console.
             </div>
           )}
         </div>
