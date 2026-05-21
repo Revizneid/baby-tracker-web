@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Heart, Mail, Lock, Loader2, Chrome, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Mail, Lock, Loader2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -81,7 +81,24 @@ export default function LoginPage() {
           {googleLoading ? (
             <Loader2 className="w-5 h-5 animate-spin text-[#1D9E75]" />
           ) : (
-            <Chrome className="w-5 h-5 text-red-500" />
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                fill="#EA4335"
+                d="M12 5.04c1.67 0 3.2.58 4.38 1.71l3.27-3.27C17.67 1.54 15.03 1 12 1 7.37 1 3.4 3.63 1.45 7.45l3.86 3C6.27 7.42 8.87 5.04 12 5.04z"
+              />
+              <path
+                fill="#4285F4"
+                d="M23.45 12.3c0-.82-.07-1.6-.2-2.3H12v4.4h6.43c-.28 1.44-1.1 2.66-2.33 3.48l3.6 2.8c2.1-1.94 3.75-4.8 3.75-8.38z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.31 10.45c-.24-.72-.37-1.5-.37-2.3s.13-1.58.37-2.3L1.45 2.85C.52 4.7.02 6.8.02 9s.5 4.3 1.43 6.15l3.86-3.7z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.6-2.8c-1.1.74-2.52 1.18-4.36 1.18-3.13 0-5.73-2.38-6.69-5.41l-3.86 3C3.4 20.37 7.37 23 12 23z"
+              />
+            </svg>
           )}
           <span>Tiếp tục với Google</span>
         </button>
