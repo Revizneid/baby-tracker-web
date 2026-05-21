@@ -809,28 +809,25 @@ REQUIREMENTS:
 
 ---
 
-## Open Questions
+## Các Quyết định thiết kế (Đã thống nhất)
 
 > [!IMPORTANT]
 > **Q1: Giữ tên bảng hiện tại hay rename theo PRD?**
-> - Hiện tại: `feeds`, `pumping_logs` 
-> - PRD: `feed_logs`, `pump_logs`
-> - Rename sẽ break data cũ. Gợi ý: giữ tên cũ, chỉ thêm bảng mới.
+> - **Quyết định**: **Giữ tên cũ**. Các bảng `feeds`, `pumping_logs`, `diaper_logs`, `sleep_logs`, `growth_logs` và `milk_storage` được giữ nguyên tên cũ để tránh gây lỗi/mất mát dữ liệu hiện có.
+> - **Ảnh hưởng**: Các service và query trong code sẽ tiếp tục truy vấn đến các bảng này thay vì đổi sang `feed_logs`/`pump_logs`.
 
 > [!IMPORTANT]
 > **Q2: Có muốn cài shadcn/ui không?**
-> PRD đề cập shadcn/ui nhưng hiện tại dùng custom components. Cài shadcn/ui sẽ phải refactor nhiều component.
-> - Option A: Giữ custom Tailwind (nhanh hơn, ít breaking change)
-> - Option B: Migrate sang shadcn/ui (chuẩn hơn, nhiều component sẵn)
+> - **Quyết định**: **Giữ custom Tailwind**, không cài shadcn/ui để giữ tốc độ phát triển và tránh refactor quá lớn các component hiện tại.
 
 > [!IMPORTANT]
 > **Q3: Google OAuth - đã setup trong Supabase Dashboard chưa?**
-> Prompt 1 cần Google OAuth callback. Cần xác nhận đã cấu hình Google Cloud Console + Supabase Auth.
+> - **Quyết định**: **Chưa setup**. Chúng tôi vẫn sẽ tích hợp nút đăng nhập Google và handle OAuth callback theo đúng luồng, đồng thời hiển thị hướng dẫn cấu hình chi tiết cho bạn.
 
 > [!WARNING]
 > **Q4: Supabase Realtime đã enable chưa?**
-> Hiện tại dùng polling 30s. Nếu muốn chuyển sang Realtime cần enable trong Supabase Dashboard.
+> - **Quyết định**: **Đã Enable**. Sẽ chuyển đổi từ cơ chế polling 30s sang cơ chế Realtime subscription để cập nhật dữ liệu tức thì.
 
 > [!NOTE]
 > **Q5: Có cần import data từ app mobile (FamilyGreen FG2)?**
-> PRD Sprint 4 đề cập parse FG2 code. Có muốn implement ở web app không?
+> - **Quyết định**: **Không cần**.

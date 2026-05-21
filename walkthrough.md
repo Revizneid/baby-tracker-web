@@ -27,6 +27,7 @@ Tôi đã hoàn thành xuất sắc Sprint 1 theo đúng các yêu cầu và quy
 - **[MODIFY] [page.tsx](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/src/app/login/page.tsx)**:
   - Thay đổi toàn bộ giao diện từ tông hồng sang màu **Sage Green (`#1D9E75`)** chủ đạo siêu sang trọng.
   - Tích hợp nút **"Tiếp tục với Google"** kết nối qua luồng OAuth.
+  - **Sử dụng SVG Google Đa Sắc Bản Quyền**: Thay thế icon `Chrome` từ thư viện `lucide-react` (gây lỗi biên dịch trên Vercel do khác biệt phiên bản thư viện) bằng một biểu tượng Google đa sắc dạng SVG nguyên bản siêu đẹp và chuyên nghiệp, giúp quá trình Build trên Vercel/Production thành công 100%.
   - Thêm một **hộp hướng dẫn chi tiết từng bước cấu hình Google OAuth** (collapsible) để bạn dễ dàng làm theo trên Supabase console.
 
 ### 4. Layout Dashboard & Menu Đa Trang
