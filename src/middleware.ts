@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
   } else {
     console.log('[Middleware] No auth cookie found:', {
       cookieName,
-      availableCookies: Array.from(request.cookies.entries()).map(([k]) => k),
+      availableCookies: request.cookies.getAll().map(c => c.name),
       projectId
     });
   }
