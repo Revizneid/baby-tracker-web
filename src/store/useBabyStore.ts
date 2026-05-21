@@ -68,8 +68,8 @@ export const useBabyStore = create<BabyState>((set, get) => ({
         babyService.getSleepLogs(babyId),
         babyService.getDiaperLogs(babyId),
         babyService.getGrowthLogs(babyId),
-        babyService.getPumpingLogs(),
-        babyService.getMilkStorage(),
+        babyService.getPumpingLogs(babyId),
+        babyService.getMilkStorage(babyId),
       ]);
       set({ feeds, sleeps, diapers, growths, pumpingLogs, milkStorage, loading: false });
     } catch (err: any) {

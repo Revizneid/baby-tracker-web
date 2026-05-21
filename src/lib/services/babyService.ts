@@ -247,10 +247,11 @@ export const babyService = {
   // =========================================================================
   // PUMPING LOGS (Note: Keeps existing pumping_logs table name)
   // =========================================================================
-  async getPumpingLogs() {
+  async getPumpingLogs(babyId: string) {
     const { data, error } = await supabase
       .from('pumping_logs')
       .select('*')
+      .eq('baby_id', babyId)
       .order('timestamp', { ascending: false });
     if (error) throw error;
     return data as PumpingLog[];
@@ -272,10 +273,11 @@ export const babyService = {
   // =========================================================================
   // MILK STORAGE
   // =========================================================================
-  async getMilkStorage() {
+  async getMilkStorage(babyId: string) {
     const { data, error } = await supabase
       .from('milk_storage')
       .select('*')
+      .eq('baby_id', babyId)
       .order('expires_at', { ascending: true });
     if (error) throw error;
     return data as MilkStorage[];

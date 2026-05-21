@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- 2. BABIES Table
 CREATE TABLE IF NOT EXISTS public.babies (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     birth_date DATE NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.babies (
 
 -- 3. FAMILY_MEMBERS Table
 CREATE TABLE IF NOT EXISTS public.family_members (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     role TEXT CHECK (role IN ('owner', 'member')) DEFAULT 'member',
@@ -36,9 +36,9 @@ CREATE TABLE IF NOT EXISTS public.family_members (
 
 -- 4. FAMILY_INVITES Table
 CREATE TABLE IF NOT EXISTS public.family_invites (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
-    token UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+    token UUID UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
     expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '7 days'),
     used_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -71,10 +71,10 @@ END $$;
 
 -- 5. FEEDS Table (Keep old name feeds instead of feed_logs)
 CREATE TABLE IF NOT EXISTS public.feeds (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    type TEXT NOT NULL, -- Keep type as text to support transition, or feed_type_enum
+    type feed_type_enum NOT NULL,
     amount VARCHAR(50) DEFAULT '0', -- Keep amount as string/ml representation from original
     note TEXT,
     time VARCHAR(50) NOT NULL, -- Original had time as string ("HH:MM")
@@ -86,13 +86,13 @@ CREATE TABLE IF NOT EXISTS public.feeds (
 
 -- 6. SLEEP_LOGS Table
 CREATE TABLE IF NOT EXISTS public.sleep_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     start_time VARCHAR(50) NOT NULL,
     end_time VARCHAR(50) NOT NULL,
     start_timestamp BIGINT NOT NULL,
-    type TEXT NOT NULL, -- 'night' | 'nap'
+    type sleep_type_enum NOT NULL,
     duration_minutes INTEGER NOT NULL,
     date DATE NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -101,10 +101,10 @@ CREATE TABLE IF NOT EXISTS public.sleep_logs (
 
 -- 7. DIAPER_LOGS Table
 CREATE TABLE IF NOT EXISTS public.diaper_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    type TEXT NOT NULL, -- 'wet' | 'dirty' | 'both' | 'clean'
+    type diaper_type_enum NOT NULL,
     color TEXT,
     note TEXT,
     time VARCHAR(50) NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS public.diaper_logs (
 
 -- 8. GROWTH_LOGS Table
 CREATE TABLE IF NOT EXISTS public.growth_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     date DATE NOT NULL,
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS public.growth_logs (
 
 -- 9. PUMPING_LOGS Table (Keep old name pumping_logs instead of pump_logs)
 CREATE TABLE IF NOT EXISTS public.pumping_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     date DATE NOT NULL,
@@ -151,13 +151,13 @@ CREATE TABLE IF NOT EXISTS public.pumping_logs (
 
 -- 10. MILK_STORAGE Table
 CREATE TABLE IF NOT EXISTS public.milk_storage (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     date DATE NOT NULL,
     timestamp BIGINT NOT NULL,
     amount_ml INTEGER NOT NULL,
-    stored_at TEXT NOT NULL, -- 'fridge' | 'freezer'
+    stored_at storage_type_enum NOT NULL, -- 'fridge' | 'freezer'
     expires_at DATE NOT NULL,
     note TEXT,
     used BOOLEAN DEFAULT FALSE,
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS public.milk_storage (
 
 -- 11. VACCINE_RECORDS Table
 CREATE TABLE IF NOT EXISTS public.vaccine_records (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     vaccine_id VARCHAR(50) NOT NULL,
@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS public.vaccine_records (
 
 -- 12. REMINDERS Table
 CREATE TABLE IF NOT EXISTS public.reminders (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     baby_id UUID REFERENCES public.babies(id) ON DELETE CASCADE,
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS public.reminders (
 
 -- 13. WATER_LOGS Table (For Mother)
 CREATE TABLE IF NOT EXISTS public.water_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     amount_ml INTEGER NOT NULL,
     logged_at TIMESTAMPTZ DEFAULT NOW(),
@@ -287,7 +287,8 @@ ALTER TABLE public.water_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own profiles" 
     ON public.profiles 
     FOR ALL 
-    USING (auth.uid() = id);
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
 
 -- Helper functions for complex RLS checks
 CREATE OR REPLACE FUNCTION public.is_baby_member(baby_id UUID, user_id UUID)
@@ -340,7 +341,8 @@ BEGIN
         EXECUTE format('
             CREATE POLICY %I ON public.%I
                 FOR ALL
-                USING (public.is_baby_member(baby_id, auth.uid()));
+                USING (public.is_baby_member(baby_id, auth.uid()))
+                WITH CHECK (public.is_baby_member(baby_id, auth.uid()));
         ', 'Manage ' || t || ' for shared baby', t);
     END LOOP;
 END;
