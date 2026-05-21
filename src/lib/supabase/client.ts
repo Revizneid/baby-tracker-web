@@ -29,7 +29,7 @@ const cookieStorage = {
     if (typeof document === 'undefined') return;
     const encodedValue = encodeURIComponent(value);
     const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `${key}=${encodedValue};expires=${expires};path=/;SameSite=Lax;Secure`;
+    document.cookie = `${key}=${encodedValue};expires=${expires};path=/;SameSite=None;Secure`;
   },
   removeItem: (key: string) => {
     if (typeof document === 'undefined') return;

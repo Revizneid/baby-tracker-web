@@ -74,12 +74,14 @@ export default function LoginPage() {
     try {
       const currentParams = new URLSearchParams(window.location.search);
       const nextPath = currentParams.get('next');
-      const redirectTo = `${window.location.origin}/auth/callback${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ''}`;
+      if (nextPath) {
+        window.localStorage.setItem('supabase_oauth_next', nextPath);
+      }
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       if (error) throw error;

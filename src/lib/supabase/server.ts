@@ -24,7 +24,7 @@ export async function createServerClient() {
 
   if (tokenCookie?.value) {
     try {
-      const tokenData = JSON.parse(tokenCookie.value);
+      const tokenData = JSON.parse(decodeURIComponent(tokenCookie.value));
       if (tokenData.access_token) {
         await serverClient.auth.setSession({
           access_token: tokenData.access_token,

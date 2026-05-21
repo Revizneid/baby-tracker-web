@@ -68,7 +68,7 @@ export async function middleware(request: NextRequest) {
         response.cookies.set(cookieName, newSessionValue, {
           path: '/',
           expires,
-          sameSite: 'lax',
+          sameSite: 'none',
           secure: true
         });
       } else {

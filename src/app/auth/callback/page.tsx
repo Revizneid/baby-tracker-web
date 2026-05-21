@@ -13,7 +13,8 @@ export default function OAuthCallbackPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    const nextPath = params.get('next') || '/';
+    const storedNext = window.localStorage.getItem('supabase_oauth_next');
+    const nextPath = storedNext || params.get('next') || '/';
 
     if (!code) {
       setError('Không tìm thấy mã xác thực Google.');
@@ -31,23 +32,22 @@ export default function OAuthCallbackPage() {
           throw error;
         }
 
-        if (data?.session) {
-          router.replace(nextPath.startsWith('/') ? nextPath : '/');
-          return;
+        const session = data?.session ?? (await supabase.auth.getSession()).data?.session;
+        if (!session) {
+          throw new Error('Không thể xác thực phiên đăng nhập.');
         }
 
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          throw sessionError;
-        }
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+        const match = supabaseUrl.match(/https:\/\/([a-z0-9\-]+)\.supabase/);
+        const projectId = match ? match[1] : '';
+        const cookieName = `sb-${projectId}-auth-token`;
+        const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+        document.cookie = `${cookieName}=${encodeURIComponent(JSON.stringify(session))};expires=${expires};path=/;SameSite=None;Secure`;
 
-        if (sessionData?.session) {
-          router.replace(nextPath.startsWith('/') ? nextPath : '/');
-          return;
-        }
-
-        throw new Error('Không thể xác thực phiên đăng nhập.');
+        window.localStorage.removeItem('supabase_oauth_next');
+        router.replace(nextPath.startsWith('/') ? nextPath : '/');
       } catch (err: any) {
+        console.error('OAuth callback error:', err);
         setError(err.message || 'Đăng nhập Google thất bại.');
       } finally {
         setLoading(false);
