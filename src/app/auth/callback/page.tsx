@@ -29,17 +29,25 @@ export default function OAuthCallbackPage() {
       try {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
-          throw error;
+          throw new Error(JSON.stringify(error));
         }
 
         const session = data?.session ?? (await supabase.auth.getSession()).data?.session;
         if (!session) {
-          throw new Error('Không thể xác thực phiên đăng nhập.');
+          throw new Error(`Không thể xác thực phiên đăng nhập. exchange data=${JSON.stringify(data)}`);
         }
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+        if (!supabaseUrl) {
+          throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured.');
+        }
+
         const match = supabaseUrl.match(/https:\/\/([a-z0-9\-]+)\.supabase/);
         const projectId = match ? match[1] : '';
+        if (!projectId) {
+          throw new Error(`Unable to extract Supabase project ID from ${supabaseUrl}`);
+        }
+
         const cookieName = `sb-${projectId}-auth-token`;
         const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
         document.cookie = `${cookieName}=${encodeURIComponent(JSON.stringify(session))};expires=${expires};path=/;SameSite=None;Secure`;
@@ -48,7 +56,7 @@ export default function OAuthCallbackPage() {
         router.replace(nextPath.startsWith('/') ? nextPath : '/');
       } catch (err: any) {
         console.error('OAuth callback error:', err);
-        setError(err.message || 'Đăng nhập Google thất bại.');
+        setError(err?.message ? String(err.message) : String(err));
       } finally {
         setLoading(false);
       }
