@@ -41,5 +41,7 @@ export const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: cookieStorage,
     flowType: 'pkce',
+    persistSession: true,
+    detectSessionInUrl: false,
   }
 });
