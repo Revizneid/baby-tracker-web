@@ -5,7 +5,7 @@ export async function createServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const projectId = supabaseUrl ? new URL(supabaseUrl).hostname.split('.')[0] : '';
   const cookieName = `sb-${projectId}-auth-token`;
 
