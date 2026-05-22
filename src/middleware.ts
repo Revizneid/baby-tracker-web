@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient as createServerSupabaseClient } from '@supabase/ssr';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -16,33 +16,39 @@ export async function middleware(request: NextRequest) {
   const projectId = supabaseUrl ? new URL(supabaseUrl).hostname.split('.')[0] : '';
   const cookieName = `sb-${projectId}-auth-token`;
 
-  const tokenCookie = request.cookies.get(cookieName);
-  let session = null;
+  const response = NextResponse.next();
+  const cookieStore = request.cookies;
 
-  if (tokenCookie?.value) {
-    try {
-      const rawValue = decodeURIComponent(tokenCookie.value);
-      session = JSON.parse(rawValue);
-      console.log('[Middleware] Session found:', { cookieName, hasAccessToken: !!session?.access_token });
-    } catch (e) {
-      console.error('[Middleware] Cookie parse error:', { cookieName, error: e });
-    }
-  } else {
-    console.log('[Middleware] No auth cookie found:', {
-      cookieName,
-      availableCookies: request.cookies.getAll().map(c => c.name),
-      projectId
-    });
-  }
+  const supabaseClient = createServerSupabaseClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll: async () => {
+        return cookieStore.getAll().map((cookie) => ({
+          name: cookie.name,
+          value: cookie.value || '',
+        }));
+      },
+      setAll: async (cookiesToSet) => {
+        cookiesToSet.forEach((cookie) => {
+          response.cookies.set(cookie.name, cookie.value || '', cookie.options as any);
+        });
+      },
+    },
+    cookieOptions: {
+      name: cookieName,
+      path: '/',
+      sameSite: 'none',
+      secure: true,
+    },
+  });
 
-  // Create response
-  let response = NextResponse.next();
+  const {
+    data: { session },
+  } = await supabaseClient.auth.getSession();
 
   // If path is protected and no valid session
   if (!isPublicPath && (!session || !session.access_token)) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    // Optionally redirect back after login
     url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
   }
@@ -58,30 +64,15 @@ export async function middleware(request: NextRequest) {
   if (session && session.expires_at) {
     const isExpired = session.expires_at * 1000 < Date.now();
     if (isExpired && session.refresh_token) {
-      const tempClient = createClient(supabaseUrl, supabaseAnonKey, {
-        auth: { persistSession: false }
-      });
-      
-      const { data, error } = await tempClient.auth.refreshSession({
-        refresh_token: session.refresh_token
+      const { data, error } = await supabaseClient.auth.refreshSession({
+        refresh_token: session.refresh_token,
       });
 
       if (!error && data.session) {
-        // Update the cookie in the response
-        const newSessionValue = JSON.stringify(data.session);
-        const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-        
-        response.cookies.set(cookieName, newSessionValue, {
-          path: '/',
-          expires,
-          sameSite: 'none',
-          secure: true
-        });
+        // If refreshSession triggers server-side cookie updates, the SSR client will apply them.
       } else {
-        // If refresh failed, clear session and redirect to login
-        response = NextResponse.redirect(new URL('/login', request.url));
         response.cookies.delete(cookieName);
-        return response;
+        return NextResponse.redirect(new URL('/login', request.url));
       }
     }
   }
@@ -91,13 +82,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

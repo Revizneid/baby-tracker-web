@@ -52,28 +52,8 @@ export default function OAuthCallbackPage() {
           throw new Error('Không thể xác thực phiên đăng nhập.');
         }
 
-        console.log('[Callback] Session exchanged:', {
-          accessToken: data.session.access_token?.substring(0, 10) + '...',
-          expiresAt: data.session.expires_at,
-          user: data.session.user?.email,
-        });
-
-        // Manually set cookie for server-side access (Supabase client stores in localStorage)
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-        const projectId = supabaseUrl ? new URL(supabaseUrl).hostname.split('.')[0] : '';
-        const cookieName = `sb-${projectId}-auth-token`;
-        const encodedSession = encodeURIComponent(JSON.stringify(data.session));
-        const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
-        document.cookie = `${cookieName}=${encodedSession};expires=${expires};path=/;SameSite=None;Secure`;
-        
-        console.log('[Callback] Cookie set:', { cookieName, sessionSet: true });
-
         window.localStorage.removeItem('supabase_oauth_next');
-        
-        // Add delay to ensure cookie is written
-        setTimeout(() => {
-          window.location.replace(nextPath.startsWith('/') ? nextPath : '/');
-        }, 100);
+        window.location.replace(nextPath.startsWith('/') ? nextPath : '/');
       } catch (err: any) {
         console.error('[Callback] OAuth error:', err);
         setError(err?.message ? String(err.message) : String(err));
