@@ -12,10 +12,6 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-  // Extract project id from Supabase URL to match cookie name
-  const projectId = supabaseUrl ? new URL(supabaseUrl).hostname.split('.')[0] : '';
-  const cookieName = `sb-${projectId}-auth-token`;
-
   const response = NextResponse.next();
   const cookieStore = request.cookies;
 
@@ -34,10 +30,8 @@ export async function middleware(request: NextRequest) {
       },
     },
     cookieOptions: {
-      name: cookieName,
       path: '/',
-      sameSite: 'none',
-      secure: true,
+      maxAge: 60 * 60 * 24 * 365, // 1 year
     },
   });
 
@@ -69,9 +63,8 @@ export async function middleware(request: NextRequest) {
       });
 
       if (!error && data.session) {
-        // If refreshSession triggers server-side cookie updates, the SSR client will apply them.
+        // SSR client will apply cookie updates automatically
       } else {
-        response.cookies.delete(cookieName);
         return NextResponse.redirect(new URL('/login', request.url));
       }
     }

@@ -29,6 +29,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       setLoading(false);
       
+      if (session?.user) {
+        // Ensure profile exists for logged-in user
+        await ensureProfileExists(session.user.id, session.user.email);
+      }
+      
       if (!session && pathname !== '/login') {
         router.push('/login');
       }
@@ -42,7 +47,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(currentUser);
         setLoading(false);
 
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Create profile on first sign in
+          await ensureProfileExists(session.user.id, session.user.email);
           router.push('/');
         } else if (event === 'SIGNED_OUT') {
           router.push('/login');
@@ -54,6 +61,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       authListener.subscription.unsubscribe();
     };
   }, [router, pathname]);
+
+  const ensureProfileExists = async (userId: string, email?: string) => {
+    try {
+      // Check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+      
+      if (existingProfile) {
+        // Profile already exists
+        return;
+      }
+      
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        // Error other than "no rows returned"
+        console.error('Error checking profile:', fetchError);
+        return;
+      }
+      
+      // Profile doesn't exist, create it
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            full_name: email?.split('@')[0] || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+        ]);
+      
+      if (insertError) {
+        console.error('Error creating profile:', insertError);
+      }
+    } catch (error) {
+      console.error('Error in ensureProfileExists:', error);
+    }
+  };
 
   const signOut = async () => {
     await supabase.auth.signOut();

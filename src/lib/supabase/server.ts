@@ -6,8 +6,6 @@ export async function createServerClient() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
   const cookieStore = await cookies();
-  const projectId = supabaseUrl ? new URL(supabaseUrl).hostname.split('.')[0] : '';
-  const cookieName = `sb-${projectId}-auth-token`;
 
   return createServerSupabaseClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -24,10 +22,8 @@ export async function createServerClient() {
       },
     },
     cookieOptions: {
-      name: cookieName,
       path: '/',
-      sameSite: 'none',
-      secure: true,
+      maxAge: 60 * 60 * 24 * 365, // 1 year
     },
   });
 }

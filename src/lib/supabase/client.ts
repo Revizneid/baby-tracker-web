@@ -7,14 +7,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase URL or Anon Key is missing. Please check your .env.local file.');
 }
 
-const projectId = supabaseUrl ? new URL(supabaseUrl).hostname.split('.')[0] : '';
-const cookieName = `sb-${projectId}-auth-token`;
-
 export const supabaseClient = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   cookieOptions: {
-    name: cookieName,
     path: '/',
-    sameSite: 'none',
-    secure: true,
+    maxAge: 60 * 60 * 24 * 365, // 1 year
   },
 });
