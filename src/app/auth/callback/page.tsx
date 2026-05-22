@@ -28,6 +28,20 @@ export default function OAuthCallbackPage() {
       setError(null);
       setLoading(true);
 
+      // Debug: print available cookies and check for PKCE keys
+      try {
+        console.debug('[Callback] document.cookie', document.cookie);
+        const cookies = document.cookie.split(';').map(c => c.trim());
+        const keys = cookies.map(c => c.split('=')[0]);
+        console.debug('[Callback] cookie keys', keys);
+        const commonPkceKeys = ['pkce_code_verifier', 'pkce.code_verifier', 'supabase_pkce_code_verifier', 'sb-pkce-code-verifier'];
+        commonPkceKeys.forEach(k => {
+          if (document.cookie.includes(k + '=')) console.debug('[Callback] found pkce key', k);
+        });
+      } catch (e) {
+        console.debug('[Callback] cookie debug error', e);
+      }
+
       try {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
