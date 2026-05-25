@@ -169,51 +169,65 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
           )}
 
           {type === 'sleep' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 ml-1 mb-2">Loại giấc ngủ</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSleepType('nap')}
-                  className={`py-3 rounded-xl border-2 transition-all ${
-                    sleepType === 'nap' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-100 bg-gray-50 text-gray-500'
-                  }`}
-                >
-                  Ngủ ngày
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSleepType('night')}
-                  className={`py-3 rounded-xl border-2 transition-all ${
-                    sleepType === 'night' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-100 bg-gray-50 text-gray-500'
-                  }`}
-                >
-                  Ngủ đêm
-                </button>
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 ml-1 mb-2">Loại giấc ngủ</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSleepType('nap')}
+                    className={`py-3 rounded-xl border-2 transition-all ${
+                      sleepType === 'nap' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-100 bg-gray-50 text-gray-500'
+                    }`}
+                  >
+                    Ngủ ngày
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSleepType('night')}
+                    className={`py-3 rounded-xl border-2 transition-all ${
+                      sleepType === 'night' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-100 bg-gray-50 text-gray-500'
+                    }`}
+                  >
+                    Ngủ đêm
+                  </button>
+                </div>
               </div>
-            </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 ml-1">Bắt đầu</label>
+                  <input
+                    type="time"
+                    required
+                    className="block w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 ml-1">Kết thúc</label>
+                  <input
+                    type="time"
+                    required
+                    className="block w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {type === 'diaper' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 ml-1">Bắt đầu</label>
-              <input
-                type="time"
-                required
-                className="block w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 ml-1">Kết thúc</label>
-              <input
-                type="time"
-                required
-                className="block w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-              />
-            </div>
-          </div>
+              <label className="block text-sm font-medium text-gray-700 ml-1 mb-2">Loại tã</label>
+              <div className="grid grid-cols-4 gap-3">
+                {(['wet', 'dirty', 'both', 'clean'] as const).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDiaperType(d)}
                     className={`py-3 rounded-xl border-2 transition-all capitalize ${
                       diaperType === d ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 bg-gray-50 text-gray-500'
                     }`}
@@ -251,7 +265,7 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
                 : type === 'sleep'
                 ? 'bg-purple-500 hover:bg-purple-600'
                 : 'bg-blue-500 hover:bg-blue-600'
-            }`
+            }`}
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span className="text-base sm:text-lg">Lưu nhật ký</span>}
           </button>
