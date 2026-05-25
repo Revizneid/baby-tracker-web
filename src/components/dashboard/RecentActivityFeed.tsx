@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { useBabyStore } from '@/store/useBabyStore';
 import { formatDistanceToNow } from 'date-fns';
-import { viVN } from 'date-fns/locale';
+import { vi } from 'date-fns/locale';
 import { Milk, Moon, Baby, Trash2 } from 'lucide-react';
 
 interface Activity {
@@ -145,7 +145,7 @@ export default function RecentActivityFeed() {
           {recentActivities.map((activity, index) => {
             const relativeTime = formatDistanceToNow(
               new Date(activity.timestamp),
-              { addSuffix: true, locale: viVN }
+              { addSuffix: true, locale: vi }
             );
 
             return (
