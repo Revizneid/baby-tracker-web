@@ -38,7 +38,7 @@ export default function RecentActivityFeed() {
       activities.push({
         id: `feed-${f.id}`,
         type: 'feed',
-        timestamp: parseInt(f.timestamp) || 0,
+        timestamp: f.timestamp || 0,
         label: `${typeLabel}${amountLabel}`,
         time: f.time,
         icon: <Milk className="w-4 h-4" />,
@@ -70,7 +70,7 @@ export default function RecentActivityFeed() {
       activities.push({
         id: `sleep-${s.id}`,
         type: 'sleep',
-        timestamp: parseInt(s.start_timestamp) || 0,
+        timestamp: s.start_timestamp || 0,
         label: `${typeLabel}${durText}`,
         time: s.start_time,
         icon: <Moon className="w-4 h-4" />,
@@ -90,7 +90,7 @@ export default function RecentActivityFeed() {
       activities.push({
         id: `diaper-${d.id}`,
         type: 'diaper',
-        timestamp: parseInt(d.timestamp) || 0,
+        timestamp: d.timestamp || 0,
         label: typeLabel,
         time: d.time,
         icon: <Baby className="w-4 h-4" />,
