@@ -17,24 +17,24 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
   // Common fields
   const [note, setNote] = useState('');
   const [time, setTime] = useState(new Date().toTimeString().slice(0, 5));
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
 
   // Feed specific
-  const [feedType, setFeedType] = useState<any>('formula');
+  const [feedType, setFeedType] = useState<'formula' | 'breast-left' | 'breast-right' | 'breast-both' | 'pumped'>('formula');
   const [amount, setAmount] = useState('');
 
   // Sleep specific
-  const [sleepType, setSleepType] = useState<any>('nap');
-  const [endTime, setEndTime] = useState('');
+  const [sleepType, setSleepType] = useState<'nap' | 'night'>('nap');
+  const [endTime, setEndTime] = useState(new Date().toTimeString().slice(0, 5));
 
   // Diaper specific
-  const [diaperType, setDiaperType] = useState<any>('wet');
+  const [diaperType, setDiaperType] = useState<'wet' | 'dirty' | 'both' | 'clean'>('wet');
 
   if (!isOpen || !currentBaby) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const date = new Date().toISOString().split('T')[0];
     const timestamp = Date.now();
 
     try {
@@ -44,18 +44,25 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
           time,
           timestamp,
           type: feedType,
-          amount,
+          amount: amount.trim(),
           note,
           date,
         });
       } else if (type === 'sleep') {
+        const start = new Date(`${date}T${time}:00`);
+        let end = new Date(`${date}T${endTime}:00`);
+        if (end.getTime() < start.getTime()) {
+          end = new Date(end.getTime() + 24 * 60 * 60 * 1000);
+        }
+        const durationMinutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+
         await addSleep({
           baby_id: currentBaby.id,
           start_time: time,
           end_time: endTime || time,
           start_timestamp: timestamp,
           type: sleepType,
-          duration_minutes: 0, // Simplified for now
+          duration_minutes: durationMinutes,
           date,
         });
       } else if (type === 'diaper') {
@@ -70,9 +77,10 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
         });
       }
       onClose();
-      // Reset
       setNote('');
       setAmount('');
+      setEndTime(new Date().toTimeString().slice(0, 5));
+      setDate(new Date().toISOString().slice(0, 10));
     } catch (err) {
       console.error(err);
       alert('Có lỗi xảy ra');
@@ -102,19 +110,31 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Time Picker */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 ml-1">Thời gian</label>
-            <div className="mt-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Clock className="h-5 w-5 text-gray-400" />
-              </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 ml-1">Ngày</label>
               <input
-                type="time"
+                type="date"
                 required
-                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 ml-1">Thời gian</label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Clock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="time"
+                  required
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
@@ -131,6 +151,7 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
                   <option value="formula">Sữa công thức</option>
                   <option value="breast-left">Bú mẹ (Trái)</option>
                   <option value="breast-right">Bú mẹ (Phải)</option>
+                  <option value="breast-both">Bú mẹ (Hai bên)</option>
                   <option value="pumped">Sữa mẹ vắt</option>
                 </select>
               </div>
@@ -171,17 +192,28 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
                 </button>
               </div>
             </div>
-          )}
-
-          {type === 'diaper' && (
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 ml-1 mb-2">Tình trạng</label>
-              <div className="grid grid-cols-2 gap-3">
-                {['wet', 'dirty', 'both', 'clean'].map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => setDiaperType(d)}
+              <label className="block text-sm font-medium text-gray-700 ml-1">Bắt đầu</label>
+              <input
+                type="time"
+                required
+                className="block w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 ml-1">Kết thúc</label>
+              <input
+                type="time"
+                required
+                className="block w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
+            </div>
+          </div>
                     className={`py-3 rounded-xl border-2 transition-all capitalize ${
                       diaperType === d ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 bg-gray-50 text-gray-500'
                     }`}
@@ -213,8 +245,13 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full mt-4 sm:mt-6 py-4 sm:py-5 bg-${config.color}-500 text-white rounded-2xl font-bold hover:bg-${config.color}-600 transition-all shadow-lg flex items-center justify-center space-x-2 active:scale-95`}
-            style={{ backgroundColor: `var(--color-${config.color}-500)` }}
+            className={`w-full mt-4 sm:mt-6 py-4 sm:py-5 text-white rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center space-x-2 active:scale-95 ${
+              type === 'feed'
+                ? 'bg-orange-500 hover:bg-orange-600'
+                : type === 'sleep'
+                ? 'bg-purple-500 hover:bg-purple-600'
+                : 'bg-blue-500 hover:bg-blue-600'
+            }`
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span className="text-base sm:text-lg">Lưu nhật ký</span>}
           </button>

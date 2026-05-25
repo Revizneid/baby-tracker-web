@@ -61,6 +61,11 @@ export const useBabyStore = create<BabyState>((set, get) => ({
   },
 
   fetchLogs: async (babyId) => {
+    if (!babyId) {
+      set({ error: 'Baby ID is required to load logs.', loading: false });
+      return;
+    }
+
     set({ loading: true });
     try {
       const [feeds, sleeps, diapers, growths, pumpingLogs, milkStorage] = await Promise.all([
@@ -71,9 +76,9 @@ export const useBabyStore = create<BabyState>((set, get) => ({
         babyService.getPumpingLogs(babyId),
         babyService.getMilkStorage(babyId),
       ]);
-      set({ feeds, sleeps, diapers, growths, pumpingLogs, milkStorage, loading: false });
+      set({ feeds, sleeps, diapers, growths, pumpingLogs, milkStorage, loading: false, error: null });
     } catch (err: any) {
-      set({ error: err.message, loading: false });
+      set({ error: err?.message || 'Không thể tải dữ liệu hoạt động.', loading: false });
     }
   },
 
@@ -153,8 +158,9 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       if (table === 'feeds') set((state) => ({ feeds: state.feeds.filter(f => f.id !== id) }));
       if (table === 'sleep_logs') set((state) => ({ sleeps: state.sleeps.filter(s => s.id !== id) }));
       if (table === 'diaper_logs') set((state) => ({ diapers: state.diapers.filter(d => d.id !== id) }));
+      if (table === 'pumping_logs') set((state) => ({ pumpingLogs: state.pumpingLogs.filter(p => p.id !== id) }));
     } catch (err: any) {
-      set({ error: err.message });
+      set({ error: err?.message || 'Không thể xóa nhật ký.' });
     }
   }
 }));

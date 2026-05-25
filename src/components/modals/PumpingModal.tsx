@@ -14,6 +14,7 @@ export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
   const { addPumping, addMilk } = useBabyStore();
   const [loading, setLoading] = useState(false);
 
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [time, setTime] = useState(new Date().toTimeString().slice(0, 5));
   const [leftMl, setLeftMl] = useState('');
   const [rightMl, setRightMl] = useState('');
@@ -25,12 +26,10 @@ export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const date = new Date().toISOString().split('T')[0];
     const timestamp = Date.now();
     const total = (parseInt(leftMl) || 0) + (parseInt(rightMl) || 0);
 
     try {
-      // 1. Log Pumping
       await addPumping({
         date,
         time,
@@ -45,10 +44,9 @@ export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
         note,
       });
 
-      // 2. Add to Milk Storage if selected
       if (storedAt !== 'none' && total > 0) {
-        const expiresAt = storedAt === 'fridge' 
-          ? addDays(new Date(), 4) 
+        const expiresAt = storedAt === 'fridge'
+          ? addDays(new Date(), 4)
           : addMonths(new Date(), 6);
 
         await addMilk({
@@ -63,9 +61,11 @@ export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
       }
 
       onClose();
+      setDate(new Date().toISOString().slice(0, 10));
       setLeftMl('');
       setRightMl('');
       setStoredAt('none');
+      setNote('');
     } catch (err) {
       console.error(err);
       alert('Có lỗi xảy ra');
@@ -88,7 +88,25 @@ export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 ml-1">Ngày</label>
+              <input
+                type="date"
+                className="mt-1 block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 ml-1">Thời gian</label>
+              <input
+                type="time"
+                className="mt-1 block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 ml-1">Vú trái (ml)</label>
               <input
