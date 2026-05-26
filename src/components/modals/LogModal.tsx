@@ -145,7 +145,7 @@ export default function LogModal({ isOpen, onClose, type }: LogModalProps) {
                 <label className="block text-sm font-medium text-gray-700 ml-1 mb-2">Loại sữa</label>
                 <select
                   value={feedType}
-                  onChange={(e) => setFeedType(e.target.value)}
+                  onChange={(e) => setFeedType(e.target.value as 'formula' | 'breast-left' | 'breast-right' | 'breast-both' | 'pumped')}
                   className="block w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
                 >
                   <option value="formula">Sữa công thức</option>

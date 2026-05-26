@@ -2,21 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Droplet, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Droplet } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
 import LogModal from '@/components/modals/LogModal';
 import DateFilter from '@/components/logs/DateFilter';
+import LogList from '@/components/logs/LogList';
 
 interface PageProps {
   params: { babyId: string };
 }
-
-const diaperLabel = (type: string) => {
-  if (type === 'wet') return 'Tã ướt';
-  if (type === 'dirty') return 'Tã bẩn';
-  if (type === 'both') return 'Cả hai';
-  return 'Tã sạch';
-};
 
 export default function DiaperPage({ params }: PageProps) {
   const { babyId } = params;
@@ -100,42 +94,21 @@ export default function DiaperPage({ params }: PageProps) {
       </div>
 
       <section className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Lịch sử thay tã</h3>
-            <p className="text-sm text-gray-500">Theo dõi trạng thái tã của bé trong ngày</p>
-          </div>
-          {loading && <span className="text-sm text-gray-400">Đang tải...</span>}
-        </div>
-        {filteredDiapers.length === 0 ? (
-          <div className="p-10 text-center text-gray-400">Chưa có bản ghi tã nào trong khoảng thời gian này. Thêm lần thay tã đầu tiên nhé.</div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {filteredDiapers.map((diaper) => (
-              <div key={diaper.id} className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-gray-50 transition">
-                <div>
-                  <div className="text-sm text-gray-500">{diaper.date} • {diaper.time}</div>
-                  <p className="mt-2 text-base font-semibold text-gray-900">{diaperLabel(diaper.type)}</p>
-                  <p className="mt-1 text-sm text-gray-500">Màu: {diaper.color || 'Chưa chọn'}{diaper.note ? ` • ${diaper.note}` : ''}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-xs font-semibold">{diaperLabel(diaper.type)}</span>
-                  <button
-                    onClick={() => {
-                      if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {
-                        deleteLog('diaper_logs', diaper.id);
-                      }
-                    }}
-                    className="text-gray-400 hover:text-red-500 transition"
-                    title="Xóa"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <LogList
+          logs={filteredDiapers.map((diaper) => ({
+            ...diaper,
+            type: 'diaper' as const,
+          }))}
+          type="diaper"
+          onDelete={(id) => {
+            if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {
+              deleteLog('diaper_logs', id);
+            }
+          }}
+          loading={loading}
+          title="Lịch sử thay tã"
+          subtitle="Theo dõi trạng thái tã của bé trong ngày"
+        />
       </section>
 
       <LogModal isOpen={modalOpen} onClose={() => setModalOpen(false)} type="diaper" />

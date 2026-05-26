@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow, format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { ArrowLeft, Plus, Clock, Droplet, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Clock, Droplet } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
 import LogModal from '@/components/modals/LogModal';
 import DateFilter from '@/components/logs/DateFilter';
+import LogList from '@/components/logs/LogList';
 
 interface PageProps {
   params: { babyId: string };
@@ -103,44 +104,21 @@ export default function FeedPage({ params }: PageProps) {
       </div>
 
       <section className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Lịch sử bú/ăn</h3>
-            <p className="text-sm text-gray-500">Xem lại cữ bú, loại sữa và ghi chú</p>
-          </div>
-          {loading && <span className="text-sm text-gray-400">Đang tải...</span>}
-        </div>
-        {filteredFeeds.length === 0 ? (
-          <div className="p-10 text-center text-gray-400">Chưa có cữ nào trong khoảng thời gian này. Nhấn "Thêm cữ mới" để bắt đầu.</div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {filteredFeeds.map((feed) => (
-              <div key={feed.id} className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-gray-50 transition">
-                <div>
-                  <div className="text-sm text-gray-500">{feed.date} • {feed.time}</div>
-                  <p className="mt-2 text-base font-semibold text-gray-900">
-                    {feed.type === 'formula' ? 'Sữa công thức' : feed.type === 'pumped' ? 'Sữa mẹ vắt' : `Bú mẹ (${feed.type === 'breast-left' ? 'Trái' : feed.type === 'breast-right' ? 'Phải' : 'Hai bên'})`}
-                  </p>
-                  <p className="mt-1 text-sm text-gray-500">{feed.amount} ml {feed.note ? `• ${feed.note}` : ''}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center rounded-full bg-[#1D9E75]/10 text-[#1D9E75] px-3 py-1 text-xs font-semibold">{feed.amount} ml</span>
-                  <button
-                    onClick={() => {
-                      if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {
-                        deleteLog('feeds', feed.id);
-                      }
-                    }}
-                    className="text-gray-400 hover:text-red-500 transition"
-                    title="Xóa"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <LogList
+          logs={filteredFeeds.map((feed) => ({
+            ...feed,
+            type: 'feed' as const,
+          }))}
+          type="feed"
+          onDelete={(id) => {
+            if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {
+              deleteLog('feeds', id);
+            }
+          }}
+          loading={loading}
+          title="Lịch sử bú/ăn"
+          subtitle="Xem lại cữ bú, loại sữa và ghi chú"
+        />
       </section>
 
       <LogModal isOpen={modalOpen} onClose={() => setModalOpen(false)} type="feed" />

@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow, format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { ArrowLeft, Plus, Clock, Moon, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Clock, Moon } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
 import LogModal from '@/components/modals/LogModal';
 import DateFilter from '@/components/logs/DateFilter';
+import LogList from '@/components/logs/LogList';
 
 interface PageProps {
   params: { babyId: string };
@@ -103,42 +104,21 @@ export default function SleepPage({ params }: PageProps) {
       </div>
 
       <section className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Lịch sử giấc ngủ</h3>
-            <p className="text-sm text-gray-500">Danh sách giấc ngủ đã ghi nhận</p>
-          </div>
-          {loading && <span className="text-sm text-gray-400">Đang tải...</span>}
-        </div>
-        {filteredSleeps.length === 0 ? (
-          <div className="p-10 text-center text-gray-400">Chưa có giấc ngủ nào trong khoảng thời gian này. Thêm giấc ngủ để theo dõi thói quen.</div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {filteredSleeps.map((sleep) => (
-              <div key={sleep.id} className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-gray-50 transition">
-                <div>
-                  <div className="text-sm text-gray-500">{sleep.date}</div>
-                  <p className="mt-2 text-base font-semibold text-gray-900">{sleep.type === 'night' ? 'Ngủ đêm' : 'Ngủ ngày'}</p>
-                  <p className="mt-1 text-sm text-gray-500">{sleep.start_time} – {sleep.end_time} • {sleep.duration_minutes} phút</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center rounded-full bg-purple-100 text-purple-700 px-3 py-1 text-xs font-semibold">{sleep.duration_minutes} phút</span>
-                  <button
-                    onClick={() => {
-                      if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {
-                        deleteLog('sleep_logs', sleep.id);
-                      }
-                    }}
-                    className="text-gray-400 hover:text-red-500 transition"
-                    title="Xóa"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <LogList
+          logs={filteredSleeps.map((sleep) => ({
+            ...sleep,
+            type: 'sleep' as const,
+          }))}
+          type="sleep"
+          onDelete={(id) => {
+            if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {
+              deleteLog('sleep_logs', id);
+            }
+          }}
+          loading={loading}
+          title="Lịch sử giấc ngủ"
+          subtitle="Danh sách giấc ngủ đã ghi nhận"
+        />
       </section>
 
       <LogModal isOpen={modalOpen} onClose={() => setModalOpen(false)} type="sleep" />
