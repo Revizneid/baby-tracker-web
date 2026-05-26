@@ -83,10 +83,11 @@ export const useBabyStore = create<BabyState>((set, get) => ({
   },
 
   subscribeToLogs: (babyId: string) => {
-    // Polling fallback: Refresh data every 30 seconds instead of using Realtime Replication
+    // Polling fallback: Refresh data every 5 seconds (improved from 30s for better UX)
+    // TODO: Replace with Supabase Realtime subscriptions when enabled
     const interval = setInterval(() => {
       get().fetchLogs(babyId);
-    }, 30000);
+    }, 5000);
 
     return () => {
       clearInterval(interval);

@@ -12,6 +12,13 @@ interface PageProps {
   params: { babyId: string };
 }
 
+const diaperLabel = (type: string) => {
+  if (type === 'wet') return 'Tã ướt';
+  if (type === 'dirty') return 'Tã bẩn';
+  if (type === 'both') return 'Cả hai';
+  return 'Tã sạch';
+};
+
 export default function DiaperPage({ params }: PageProps) {
   const { babyId } = params;
   const router = useRouter();
