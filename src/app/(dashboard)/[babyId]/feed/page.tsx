@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow, format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -11,11 +11,12 @@ import DateFilter from '@/components/logs/DateFilter';
 import LogList from '@/components/logs/LogList';
 
 interface PageProps {
-  params: { babyId: string };
+  params: Promise<{ babyId: string }>;
 }
 
 export default function FeedPage({ params }: PageProps) {
-  const { babyId } = params;
+  const resolvedParams = use(params);
+  const { babyId } = resolvedParams;
   const router = useRouter();
   const { currentBaby, feeds, fetchLogs, deleteLog, loading } = useBabyStore();
   const [modalOpen, setModalOpen] = useState(false);

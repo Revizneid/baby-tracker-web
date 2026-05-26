@@ -11,7 +11,7 @@ interface PumpingModalProps {
 }
 
 export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
-  const { addPumping, addMilk } = useBabyStore();
+  const { currentBaby, addPumping, addMilk } = useBabyStore();
   const [loading, setLoading] = useState(false);
 
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -25,12 +25,17 @@ export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentBaby) {
+      alert('Vui lòng chọn một em bé trước.');
+      return;
+    }
     setLoading(true);
     const timestamp = Date.now();
     const total = (parseInt(leftMl) || 0) + (parseInt(rightMl) || 0);
 
     try {
       await addPumping({
+        baby_id: currentBaby.id,
         date,
         time,
         timestamp,
@@ -50,6 +55,7 @@ export default function PumpingModal({ isOpen, onClose }: PumpingModalProps) {
           : addMonths(new Date(), 6);
 
         await addMilk({
+          baby_id: currentBaby.id,
           date,
           timestamp,
           amount_ml: total,

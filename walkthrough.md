@@ -13,14 +13,27 @@ Tôi đã hoàn tất việc rà soát, sửa lỗi và tối ưu hóa hệ th�
   - Định nghĩa một hàm helper bảo mật **`public.check_is_baby_member(p_baby_id UUID, p_user_id UUID)`** với tùy chọn `SECURITY DEFINER`. Tùy chọn này cho phép hàm chạy với quyền của chủ sở hữu database (bỏ qua kiểm tra RLS bên trong hàm), giúp phá vỡ vòng lặp đệ quy hoàn toàn.
   - Hủy bỏ các chính sách RLS cũ gây nghẽn và thiết lập lại các chính sách mới tối ưu gọi hàm helper này.
 
-### 2. Sửa lỗi cú pháp SQL Editor (Syntax Error tại 'Manage diaper_logs for shared baby')
-- **Vấn đề:** Trong tệp **[002_optimize_rls_performance.sql](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/supabase/migrations/002_optimize_rls_performance.sql)**, đoạn mã SQL động sử dụng hàm `format()` với cờ `%L` (String Literal) để tạo câu lệnh `DROP POLICY`. Điều này tạo ra câu lệnh lỗi cú pháp có dấu nháy đơn bao quanh tên policy: `DROP POLICY IF EXISTS 'Manage diaper_logs...' ON public.diaper_logs;`. Trong PostgreSQL, tên policy bắt buộc phải là một Identifier (định danh).
-- **Giải pháp:** Đã thay đổi `%L` thành `%I` (SQL Identifier) tại dòng 24. Lúc này, PostgreSQL sẽ định dạng chính xác tên chính sách dưới dạng chuỗi có dấu nháy kép `"` (ví dụ: `DROP POLICY IF EXISTS "Manage diaper_logs..."`), giải quyết triệt để lỗi biên dịch trong SQL Editor.
+### 2. Sửa lỗi cú pháp SQL Editor (Syntax Error và lỗi cột baby_id không tồn tại)
+- **Các vấn đề trong [002_optimize_rls_performance.sql](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/supabase/migrations/002_optimize_rls_performance.sql):**
+  - **Syntax Error:** Đoạn mã SQL động sử dụng hàm `format()` với cờ `%L` (String Literal) để tạo câu lệnh `DROP POLICY`. Điều này tạo ra câu lệnh lỗi cú pháp có dấu nháy đơn bao quanh tên policy: `DROP POLICY IF EXISTS 'Manage diaper_logs...' ON public.diaper_logs;`. Trong PostgreSQL, tên policy bắt buộc phải là một Identifier (định danh).
+  - **Lỗi cột `baby_id` không tồn tại:** Tại dòng 55, chính sách RLS cho bảng `public.babies` có đoạn kiểm tra `baby_id IN (...)`. Tuy nhiên, bảng `public.babies` không có cột nào tên là `baby_id` mà khóa chính của nó là `id`. Lỗi này trả về: `ERROR: 42703: column "baby_id" does not exist`.
+- **Giải pháp:**
+  - Thay đổi `%L` thành `%I` (SQL Identifier) tại dòng 24 để tạo câu lệnh `DROP POLICY` định dạng nháy kép hợp lệ.
+  - Sửa đổi kiểm tra tại dòng 55 từ `baby_id` thành `id` trong bảng `public.babies`.
 
 ### 3. Tối ưu hóa Next.js 16 và Sửa lỗi Build thành công 100%
 - **Cấu hình Proxy cho Next.js 16:** Theo quy chuẩn mới của Next.js 16 (thay thế cho `middleware.ts` cũ), tôi đã chuyển mã nguồn sang **[src/proxy.ts](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/src/proxy.ts)**.
 - **Tránh lỗi thiếu Supabase URL/Key khi Build:** Thêm giá trị placeholder dự phòng (`https://placeholder-project.supabase.co` và `placeholder-anon-key-to-prevent-build-crashes`) trong `src/proxy.ts` để trình biên dịch tĩnh (static compiler) của Next.js không bị crash khi build dự án ở môi trường không có sẵn file `.env.local`.
 - **Sửa lỗi kiểu dữ liệu TypeScript:** Sửa lỗi thiếu thuộc tính `time` khi map dữ liệu giấc ngủ tại tệp **[sleep/page.tsx](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/src/app/(dashboard)/[babyId]/sleep/page.tsx)**.
+
+### 4. Sửa lỗi Lưu Pumping (403 Forbidden) & Lỗi Gọi API `baby_id=eq.undefined` (400 Bad Request)
+- **Sửa lỗi lưu dữ liệu hút sữa:** Trong **[PumpingModal.tsx](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/src/components/modals/PumpingModal.tsx)**, trước đó modal không truyền trường `baby_id` vào các hàm `addPumping` và `addMilk`, khiến Supabase từ chối yêu cầu ghi (lỗi `403 Forbidden`) vì vi phạm chính sách RLS. Tôi đã lấy thông tin em bé đang chọn từ store `currentBaby.id` và gửi kèm trong payload lưu trữ.
+- **Sửa lỗi `baby_id=eq.undefined`:** Do quy định mới trên Next.js 15+, tham số định tuyến `params` của Route Page là một Promise không đồng bộ. Khi truy xuất trực tiếp `const { babyId } = params;` thì giá trị sẽ bị `undefined` ở lần render đầu tiên, sinh ra các lỗi gọi API Rest `400 Bad Request`. Tôi đã cập nhật lại cấu trúc nhận dạng tham số sử dụng hook React **`use(params)`** tại các trang:
+  - **[sleep/page.tsx](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/src/app/(dashboard)/[babyId]/sleep/page.tsx)**
+  - **[feed/page.tsx](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/src/app/(dashboard)/[babyId]/feed/page.tsx)**
+  - **[diaper/page.tsx](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/src/app/(dashboard)/[babyId]/diaper/page.tsx)**
+  - **[pump/page.tsx](file:///c:/Users/namvt.PROPERWELL/Documents/GitHub/baby-tracker-web/src/app/(dashboard)/[babyId]/pump/page.tsx)**
+  để bảo đảm lấy chính xác mã ID em bé ngay từ đầu.
 
 ---
 

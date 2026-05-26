@@ -9,6 +9,17 @@
 DROP POLICY IF EXISTS "Users can manage babies they own or share" ON public.babies;
 DROP POLICY IF EXISTS "Family members can view lists" ON public.family_members;
 DROP POLICY IF EXISTS "Baby owners can manage invites" ON public.family_invites;
+DROP POLICY IF EXISTS "Baby owners can create/manage invites" ON public.family_invites;
+
+-- Drop new policy names to prevent 'already exists' errors if running out of order or multiple times
+DROP POLICY IF EXISTS "Users can view/manage baby feeds" ON public.feeds;
+DROP POLICY IF EXISTS "Users can view/manage baby sleep logs" ON public.sleep_logs;
+DROP POLICY IF EXISTS "Users can view/manage baby diaper logs" ON public.diaper_logs;
+DROP POLICY IF EXISTS "Users can view/manage baby growth logs" ON public.growth_logs;
+DROP POLICY IF EXISTS "Users can view/manage baby pumping logs" ON public.pumping_logs;
+DROP POLICY IF EXISTS "Users can view/manage baby milk storage" ON public.milk_storage;
+DROP POLICY IF EXISTS "Users can view/manage baby vaccine records" ON public.vaccine_records;
+DROP POLICY IF EXISTS "Users can view/manage baby reminders" ON public.reminders;
 
 -- Drop policies for logs that use the slow function
 DO $$
@@ -52,7 +63,7 @@ CREATE POLICY "Users can manage babies they own or share"
     FOR ALL
     USING (
         auth.uid() = user_id OR 
-        baby_id IN (SELECT baby_id FROM public.family_members WHERE user_id = auth.uid())
+        id IN (SELECT baby_id FROM public.family_members WHERE user_id = auth.uid())
     );
 
 -- 3. Family Members policy - simplified

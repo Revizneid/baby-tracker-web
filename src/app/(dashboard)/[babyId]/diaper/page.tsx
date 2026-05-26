@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Droplet } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
@@ -9,7 +9,7 @@ import DateFilter from '@/components/logs/DateFilter';
 import LogList from '@/components/logs/LogList';
 
 interface PageProps {
-  params: { babyId: string };
+  params: Promise<{ babyId: string }>;
 }
 
 const diaperLabel = (type: string) => {
@@ -20,7 +20,8 @@ const diaperLabel = (type: string) => {
 };
 
 export default function DiaperPage({ params }: PageProps) {
-  const { babyId } = params;
+  const resolvedParams = use(params);
+  const { babyId } = resolvedParams;
   const router = useRouter();
   const { currentBaby, diapers, fetchLogs, deleteLog, loading } = useBabyStore();
   const [modalOpen, setModalOpen] = useState(false);

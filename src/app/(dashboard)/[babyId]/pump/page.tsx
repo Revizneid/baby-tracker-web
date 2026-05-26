@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Droplet, Refrigerator, Trash2 } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
@@ -8,11 +8,12 @@ import PumpingModal from '@/components/modals/PumpingModal';
 import DateFilter from '@/components/logs/DateFilter';
 
 interface PageProps {
-  params: { babyId: string };
+  params: Promise<{ babyId: string }>;
 }
 
 export default function PumpPage({ params }: PageProps) {
-  const { babyId } = params;
+  const resolvedParams = use(params);
+  const { babyId } = resolvedParams;
   const router = useRouter();
   const { currentBaby, pumpingLogs, fetchLogs, deleteLog, loading } = useBabyStore();
   const [modalOpen, setModalOpen] = useState(false);
