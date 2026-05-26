@@ -2,11 +2,19 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient as createServerSupabaseClient } from '@supabase/ssr';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Define public paths
-  const isPublicPath = pathname === '/login' || pathname.startsWith('/auth/callback') || pathname.startsWith('/invite/');
+  // Define public paths (including static files, invite links, login, and auth callbacks)
+  const isPublicPath = 
+    pathname === '/login' || 
+    pathname.startsWith('/auth/callback') || 
+    pathname.startsWith('/invite/') ||
+    pathname === '/manifest.json' ||
+    pathname === '/sw.js' ||
+    pathname.endsWith('.svg') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.ico');
 
   // Retrieve Supabase config
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';

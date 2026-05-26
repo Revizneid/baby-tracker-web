@@ -27,12 +27,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
-      setLoading(false);
       
       if (session?.user) {
         // Ensure profile exists for logged-in user
         await ensureProfileExists(session.user.id, session.user.email);
       }
+      
+      setLoading(false);
       
       if (!session && pathname !== '/login') {
         router.push('/login');
@@ -45,7 +46,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, session) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-        setLoading(false);
 
         if (event === 'SIGNED_IN' && session?.user) {
           // Create profile on first sign in
@@ -54,6 +54,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else if (event === 'SIGNED_OUT') {
           router.push('/login');
         }
+        
+        setLoading(false);
       }
     );
 

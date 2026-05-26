@@ -107,6 +107,7 @@ export default function SleepPage({ params }: PageProps) {
         <LogList
           logs={filteredSleeps.map((sleep) => ({
             ...sleep,
+            time: sleep.start_time,
             type: 'sleep' as const,
           }))}
           type="sleep"
