@@ -21,7 +21,7 @@ BEGIN
         WHERE table_schema = 'public' 
           AND table_name IN ('feeds', 'sleep_logs', 'diaper_logs', 'growth_logs', 'pumping_logs', 'milk_storage', 'vaccine_records', 'reminders')
     LOOP
-        EXECUTE format('DROP POLICY IF EXISTS %L ON public.%I', 'Manage ' || t || ' for shared baby', t);
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', 'Manage ' || t || ' for shared baby', t);
     END LOOP;
 END;
 $$;

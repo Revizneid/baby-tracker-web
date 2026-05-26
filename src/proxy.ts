@@ -17,8 +17,8 @@ export async function proxy(request: NextRequest) {
     pathname.endsWith('.ico');
 
   // Retrieve Supabase config
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-project.supabase.co';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key-to-prevent-build-crashes';
 
   const response = NextResponse.next();
   const cookieStore = request.cookies;
