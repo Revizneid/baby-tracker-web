@@ -317,13 +317,13 @@ export const babyService = {
     return data as VaccineRecord[];
   },
 
-  async upsertVaccineRecord(record: Omit<VaccineRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>) {
+  async upsertVaccineRecord(record: { id?: string; baby_id: string; vaccine_id: string; vacc_date: string; brand?: string; note?: string }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
     const { data, error } = await supabase
       .from('vaccine_records')
-      .upsert({ ...record, user_id: user.id })
+      .upsert({ ...record, user_id: user.id }, { onConflict: 'id' })
       .select()
       .single();
     if (error) throw error;

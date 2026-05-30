@@ -78,6 +78,12 @@ export default function Sidebar({ babyId }: SidebarProps) {
       active: pathname.endsWith('/reminders')
     },
     { 
+      name: 'Uống nước', 
+      href: activeBabyId ? `/${activeBabyId}/water` : '#', 
+      icon: Droplet,
+      active: pathname.endsWith('/water')
+    },
+    { 
       name: 'Biểu đồ', 
       href: activeBabyId ? `/${activeBabyId}/charts` : '#', 
       icon: BarChart3,

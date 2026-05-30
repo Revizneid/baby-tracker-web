@@ -3,6 +3,7 @@
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import RealtimeNotifications from '@/components/notifications/RealtimeNotifications';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useEffect } from 'react';
 import { useBabyStore } from '@/store/useBabyStore';
@@ -39,6 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
         {/* Top Navigation Header */}
         <Header />
+        <RealtimeNotifications />
         
         {/* Scrollable Main Area */}
         <main className="flex-1 overflow-y-auto">

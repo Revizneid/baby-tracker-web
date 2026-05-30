@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:e2e": "playwright test",
+    "test:qa": "echo \"Run QA_CHECKLIST.md and DEPLOYMENT_CHECKLIST.md for manual checks\""
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -22,6 +24,7 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

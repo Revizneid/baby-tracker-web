@@ -13,7 +13,7 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import { format, subDays, isSameDay } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
 export default function AnalyticsDashboard() {

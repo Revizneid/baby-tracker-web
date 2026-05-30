@@ -6,6 +6,11 @@ import { useRouter } from 'next/navigation';
 import { Plus, ArrowRight, Sparkles } from 'lucide-react';
 import AddBabyModal from '@/components/modals/AddBabyModal';
 
+export const metadata = {
+  title: 'Dashboard | BabyTracker',
+  description: 'Bảng điều khiển để quản lý hành trình bé yêu và gia đình cùng nhau.',
+};
+
 export default function DashboardIndexPage() {
   const { babies, currentBaby, setCurrentBaby, loading } = useBabyStore();
   const [isAddBabyOpen, setIsAddBabyOpen] = useState(false);

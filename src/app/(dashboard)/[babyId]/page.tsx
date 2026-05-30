@@ -18,6 +18,11 @@ interface PageProps {
   params: Promise<{ babyId: string }>;
 }
 
+export const metadata = {
+  title: 'Bảng điều khiển bé | BabyTracker',
+  description: 'Xem tóm tắt hoạt động, biểu đồ và nhật ký của bé yêu trong gia đình của bạn.',
+};
+
 export default function BabyDashboardPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const { babyId } = resolvedParams;

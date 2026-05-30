@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BabyTracker Web
 
-## Getting Started
+BabyTracker Web là ứng dụng quản lý hành trình của bé yêu với:
+- Nhật ký bú/ăn, giấc ngủ, thay tã, hút sữa
+- Tiêm chủng, tăng trưởng, nhắc nhở
+- Chia sẻ với gia đình và support PWA install
 
-First, run the development server:
+## Bắt đầu
+
+1. Cài dependencies:
+
+```bash
+npm install
+```
+
+2. Chạy development:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Mở ứng dụng:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+- `npm run dev` — chạy dev server
+- `npm run build` — build production
+- `npm run start` — chạy app sau khi build
+- `npm run lint` — kiểm tra lint
+- `npm run test:e2e` — chạy Playwright E2E tests
+- `npm run test:qa` — chạy chỉ dẫn QA manual
 
-To learn more about Next.js, take a look at the following resources:
+## Tính năng chính
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Multi-page dashboard cho từng bé
+- Family invite link + QR
+- Realtime activity notification
+- PWA manifest + service worker
+- Error boundary + custom 404
+- Metadata/SEO + Open Graph
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## QA và triển khai
 
-## Deploy on Vercel
+- Xem `QA_CHECKLIST.md` để kiểm tra chức năng chính.
+- Xem `DEPLOYMENT_CHECKLIST.md` để chuẩn bị release trên Vercel hoặc nền tảng tương tự.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Ghi chú
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `auth/callback` xử lý OAuth Google
+- `src/app/(dashboard)/layout.tsx` chứa layout dashboard chung
+- `src/app/(dashboard)/[babyId]/layout.tsx` chứa metadata cho trang bé
