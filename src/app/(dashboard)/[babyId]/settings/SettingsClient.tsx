@@ -16,7 +16,7 @@ export default function SettingsClient({ babyId }: SettingsClientProps) {
   useEffect(() => {
     if (!babyId) return;
     setLoading(true);
-    fetch(`/api/family/members?babyId=${encodeURIComponent(babyId)}`)
+    fetch(`/api/family/members?babyId=${encodeURIComponent(babyId)}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((j) => setMembers(j.members || []))
       .catch(() => setMembers([]))
@@ -30,6 +30,7 @@ export default function SettingsClient({ babyId }: SettingsClientProps) {
       const res = await fetch('/api/family/create-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ babyId }),
       });
       const json = await res.json();

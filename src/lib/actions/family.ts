@@ -1,10 +1,11 @@
-import { supabase } from '../supabase';
+import { createServerClient } from '../supabase/server';
 import { FamilyInvite, FamilyMember } from '@/types/database';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || '';
 
 export const familyActions = {
   async createInviteLink(babyId: string) {
+    const supabase = await createServerClient();
     const token = (globalThis as any)?.crypto?.randomUUID?.() ?? String(Date.now());
     const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -24,6 +25,7 @@ export const familyActions = {
   },
 
   async acceptInvite(token: string) {
+    const supabase = await createServerClient();
     const { data: invite, error: findErr } = await supabase
       .from('family_invites')
       .select('*')
@@ -62,6 +64,7 @@ export const familyActions = {
   },
 
   async removeMember(memberId: string, babyId: string) {
+    const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
@@ -83,6 +86,7 @@ export const familyActions = {
   },
 
   async getMembers(babyId: string) {
+    const supabase = await createServerClient();
     const { data, error } = await supabase
       .from('family_members')
       .select('id, role, created_at, profiles(full_name, avatar_url, id)')

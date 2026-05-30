@@ -1,4 +1,4 @@
-import { addWeeks, differenceInCalendarDays, format, startOfDay } from 'date-fns';
+import { addWeeks, differenceInCalendarDays, format, startOfDay, parseISO } from 'date-fns';
 import { VaccineRecord } from '@/types/database';
 
 export type VaccineMeta = {
@@ -58,7 +58,13 @@ export function getAgeLabel(weeks: number) {
 }
 
 export function formatPlannedDate(birthDate: string, ageWeeks: number) {
-  return format(addWeeks(new Date(birthDate), ageWeeks), 'dd/MM/yyyy');
+  try {
+    const baseDate = birthDate ? parseISO(birthDate) : new Date();
+    return format(addWeeks(baseDate, ageWeeks), 'dd/MM/yyyy');
+  } catch (e) {
+    console.error('Error formatting planned date:', e);
+    return 'N/A';
+  }
 }
 
 export function getVaccineStatus(birthDate: string, vaccine: VaccineMeta, record?: VaccineRecord): VaccineStatus {
@@ -66,13 +72,19 @@ export function getVaccineStatus(birthDate: string, vaccine: VaccineMeta, record
     return 'done';
   }
 
-  const plannedDate = startOfDay(addWeeks(new Date(birthDate), vaccine.ageWeeks));
-  const today = startOfDay(new Date());
-  const daysUntil = differenceInCalendarDays(plannedDate, today);
+  try {
+    const baseDate = birthDate ? parseISO(birthDate) : new Date();
+    const plannedDate = startOfDay(addWeeks(baseDate, vaccine.ageWeeks));
+    const today = startOfDay(new Date());
+    const daysUntil = differenceInCalendarDays(plannedDate, today);
 
-  if (daysUntil < 0) return 'overdue';
-  if (daysUntil <= 7) return 'soon';
-  return 'upcoming';
+    if (daysUntil < 0) return 'overdue';
+    if (daysUntil <= 7) return 'soon';
+    return 'upcoming';
+  } catch (e) {
+    console.error('Error getting vaccine status:', e);
+    return 'upcoming';
+  }
 }
 
 export function getStatusColor(status: VaccineStatus) {

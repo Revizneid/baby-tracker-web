@@ -74,7 +74,7 @@ export default function BarChartDay({
   const barColor = colorMap[color] || color;
 
   return (
-    <div className="w-full h-96 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div className="w-full h-96 bg-white rounded-2xl p-6 shadow-sm border border-gray-100" style={{ minWidth: 0, minHeight: 320 }}>
       <h3 className="text-lg font-semibold text-gray-800 mb-4">{label}</h3>
 
       <ResponsiveContainer width="100%" height={320}>

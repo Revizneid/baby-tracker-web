@@ -137,6 +137,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ feeds: [newFeed, ...state.feeds] }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -146,6 +147,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ pumpingLogs: [newLog, ...state.pumpingLogs] }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -155,6 +157,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ milkStorage: [newItem, ...state.milkStorage] }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -168,6 +171,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -177,6 +181,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ sleeps: [newSleep, ...state.sleeps] }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -186,6 +191,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ diapers: [newDiaper, ...state.diapers] }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -195,6 +201,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ growths: [newGrowth, ...state.growths] }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -205,6 +212,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set({ growths, loading: false, error: null });
     } catch (err: any) {
       set({ error: err.message, loading: false });
+      throw err;
     }
   },
 
@@ -214,6 +222,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ reminders: [newReminder, ...state.reminders] }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -223,6 +232,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ reminders: state.reminders.map((item) => (item.id === id ? updated : item)) }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -232,6 +242,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ reminders: state.reminders.filter((item) => item.id !== id) }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -242,6 +253,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set({ reminders, loading: false, error: null });
     } catch (err: any) {
       set({ error: err.message, loading: false });
+      throw err;
     }
   },
 
@@ -252,6 +264,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set({ waterLogs, loading: false, error: null });
     } catch (err: any) {
       set({ error: err.message, loading: false });
+      throw err;
     }
   },
 
@@ -261,6 +274,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ waterLogs: [newLog, ...state.waterLogs] }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -270,6 +284,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       set((state) => ({ waterLogs: state.waterLogs.filter((item) => item.id !== id) }));
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -286,6 +301,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       if (table === 'water_logs') set((state) => ({ waterLogs: state.waterLogs.filter(w => w.id !== id) }));
     } catch (err: any) {
       set({ error: err?.message || 'Không thể xóa nhật ký.' });
+      throw err;
     }
   }
-}));
+});

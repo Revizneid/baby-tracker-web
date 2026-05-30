@@ -20,6 +20,7 @@ export default function InviteClient({ token }: InviteClientProps) {
       const res = await fetch('/api/family/accept', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ token }),
       });
       const json = await res.json();

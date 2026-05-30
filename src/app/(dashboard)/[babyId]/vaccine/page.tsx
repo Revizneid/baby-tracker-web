@@ -9,6 +9,7 @@ import VaccineProgress from '@/components/vaccine/VaccineProgress';
 import VaccineFilterTabs from '@/components/vaccine/VaccineFilterTabs';
 import VaccineGroupSection from '@/components/vaccine/VaccineGroupSection';
 import VaccineSheet from '@/components/vaccine/VaccineSheet';
+import { parseISO } from 'date-fns';
 import SkeletonCard from '@/components/ui/SkeletonCard';
 
 interface PageProps {
@@ -184,7 +185,7 @@ export default function VaccinePage({ params }: PageProps) {
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-3xl bg-slate-50 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Ngày sinh</p>
-                <p className="mt-2 text-base font-semibold text-slate-900">{new Date(pageBaby.birth_date).toLocaleDateString('vi-VN')}</p>
+                <p className="mt-2 text-base font-semibold text-slate-900">{parseISO(pageBaby.birth_date).toLocaleDateString('vi-VN')}</p>
               </div>
               <div className="rounded-3xl bg-slate-50 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Giới tính</p>

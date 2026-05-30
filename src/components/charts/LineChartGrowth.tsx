@@ -63,7 +63,7 @@ export default function LineChartGrowth({ data }: LineChartGrowthProps) {
 
   if (chartData.length === 0) {
     return (
-      <div className="w-full h-96 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-center">
+      <div className="w-full h-96 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-center" style={{ minWidth: 0, minHeight: 320 }}>
         <div className="text-center">
           <p className="text-gray-500 text-sm">Chưa có dữ liệu tăng trưởng</p>
         </div>
@@ -72,7 +72,7 @@ export default function LineChartGrowth({ data }: LineChartGrowthProps) {
   }
 
   return (
-    <div className="w-full h-96 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div className="w-full h-96 bg-white rounded-2xl p-6 shadow-sm border border-gray-100" style={{ minWidth: 0, minHeight: 320 }}>
       <h3 className="text-lg font-semibold text-gray-800 mb-4">📏 Tăng trưởng</h3>
 
       <ResponsiveContainer width="100%" height={320}>
