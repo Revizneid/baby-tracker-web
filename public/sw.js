@@ -31,25 +31,38 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   
-  // Network-first for dynamic content
+  // Network-first with timeout for dynamic content
   if (url.pathname.includes('/api/') || url.hostname !== location.hostname) {
     event.respondWith(
-      fetch(request.clone(), { redirect: 'follow' })
-        .catch(() => caches.match(request))
+      Promise.race([
+        fetch(request.clone(), { redirect: 'follow' }),
+        new Promise((resolve) =>
+          setTimeout(() => resolve(caches.match(request)), 3000)
+        ),
+      ]).catch(() => caches.match(request) || Promise.reject())
     );
     return;
   }
 
-  // Cache-first for static assets
+  // Stale-while-revalidate for static assets
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request.clone(), { redirect: 'follow' }).catch(() => {
-        if (request.headers.get('accept')?.includes('text/html')) {
-          return new Response('Offline', { status: 503 });
+      const fetchPromise = fetch(request.clone(), { redirect: 'follow' }).then(
+        (response) => {
+          if (response.status === 200) {
+            const cache = caches.open(CACHE_NAME);
+            cache.then((c) => c.put(request, response.clone()));
+          }
+          return response;
         }
-        return Promise.reject();
-      });
+      );
+      return cached || fetchPromise;
+    })
+    .catch(() => {
+      if (request.headers.get('accept')?.includes('text/html')) {
+        return new Response('Offline', { status: 503 });
+      }
+      return Promise.reject();
     })
   );
 });

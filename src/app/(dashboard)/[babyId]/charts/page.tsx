@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { subDays, format } from 'date-fns';
+import { subDays, format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useBabyStore } from '@/store/useBabyStore';
 import { PumpingLog, FeedLog, SleepLog, DiaperLog } from '@/types/database';
@@ -296,13 +296,13 @@ export default function ChartsPage() {
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-500">
                   ✅ Chọn {format(
-                    new Date(selectedDate + 'T00:00:00'),
+                    parseISO(selectedDate),
                     'dd/MM/yyyy',
                     { locale: vi }
                   )} để xem chi tiết
                 </p>
               </div>
-            )}
+            )}}
           </div>
         </div>
       </div>
