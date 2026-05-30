@@ -302,7 +302,7 @@ export default function ChartsPage() {
                   )} để xem chi tiết
                 </p>
               </div>
-            )}}
+            )}
           </div>
         </div>
       </div>
