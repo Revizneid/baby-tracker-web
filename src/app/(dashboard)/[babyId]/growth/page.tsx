@@ -17,6 +17,15 @@ function getIsoDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
+// Safe ISO date parser
+const safeParseISO = (dateStr: string) => {
+  try {
+    return parseISO(dateStr);
+  } catch {
+    return new Date();
+  }
+};
+
 export default function GrowthPage({ params }: PageProps) {
   const { babyId } = use(params);
   const {
@@ -75,7 +84,7 @@ export default function GrowthPage({ params }: PageProps) {
   const ageWeeks = pageBaby
     ? Math.max(
         0,
-        differenceInWeeks(parseISO(latestGrowth?.date ?? getIsoDate(new Date())), parseISO(pageBaby.birth_date))
+        differenceInWeeks(safeParseISO(latestGrowth?.date ?? getIsoDate(new Date())), safeParseISO(pageBaby.birth_date))
       )
     : 0;
 

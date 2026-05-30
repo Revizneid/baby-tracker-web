@@ -134,6 +134,10 @@ export default function DayDetailCard({
   };
 
   const events = getEventsForDate();
+  
+  // Guard against empty dateStr
+  if (!dateStr) return null;
+  
   const dateObj = parse(dateStr, 'yyyy-MM-dd', new Date());
   const displayDate = format(dateObj, 'EEEE, dd/MM/yyyy', { locale: vi });
 

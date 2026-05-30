@@ -16,6 +16,15 @@ interface PageProps {
   params: Promise<{ babyId: string }>;
 }
 
+// Safe ISO date parser
+const safeParseISO = (dateStr: string) => {
+  try {
+    return parseISO(dateStr);
+  } catch {
+    return new Date();
+  }
+};
+
 export default function VaccinePage({ params }: PageProps) {
   const { babyId } = use(params);
   const { babies, currentBaby, setCurrentBaby, fetchBabies } = useBabyStore();
@@ -185,7 +194,7 @@ export default function VaccinePage({ params }: PageProps) {
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-3xl bg-slate-50 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Ngày sinh</p>
-                <p className="mt-2 text-base font-semibold text-slate-900">{parseISO(pageBaby.birth_date).toLocaleDateString('vi-VN')}</p>
+                <p className="mt-2 text-base font-semibold text-slate-900">{safeParseISO(pageBaby.birth_date).toLocaleDateString('vi-VN')}</p>
               </div>
               <div className="rounded-3xl bg-slate-50 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Giới tính</p>

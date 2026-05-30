@@ -13,6 +13,15 @@ interface PageProps {
 
 const quickAmounts = [120, 180, 250, 300];
 
+// Safe ISO date parser
+const safeParseISO = (dateStr: string) => {
+  try {
+    return parseISO(dateStr);
+  } catch {
+    return null;
+  }
+};
+
 export default function WaterPage({ params }: PageProps) {
   use(params);
   const { waterLogs, fetchWaterLogs, addWaterLog, deleteWaterLog, loading } = useBabyStore();
@@ -64,7 +73,8 @@ export default function WaterPage({ params }: PageProps) {
         .filter((entry) => {
           const loggedAt = entry.logged_at ?? entry.created_at ?? '';
           if (!loggedAt) return false;
-          return isToday(parseISO(loggedAt));
+          const parsed = safeParseISO(loggedAt);
+          return parsed ? isToday(parsed) : false;
         })
         .sort((a, b) => (b.logged_at ?? b.created_at ?? '').localeCompare(a.logged_at ?? a.created_at ?? '')),
     [waterLogs]
@@ -180,11 +190,13 @@ export default function WaterPage({ params }: PageProps) {
               <div className="mt-6 space-y-3">
                 {todayLogs.map((log) => {
                   const timestamp = log.logged_at ?? log.created_at ?? '';
+                  const parsedTime = timestamp ? safeParseISO(timestamp) : null;
+                  const formattedTime = parsedTime ? format(parsedTime, 'HH:mm', { locale: vi }) : 'Không xác định';
                   return (
                     <div key={log.id} className="flex items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
                       <div>
                         <p className="text-sm font-semibold text-slate-900">{log.amount_ml} ml</p>
-                        <p className="mt-1 text-xs text-slate-500">{timestamp ? format(parseISO(timestamp), 'HH:mm', { locale: vi }) : 'Không xác định'}</p>
+                        <p className="mt-1 text-xs text-slate-500">{formattedTime}</p>
                       </div>
                       <button
                         type="button"

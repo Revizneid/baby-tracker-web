@@ -6,6 +6,17 @@ import { Droplets, Calendar, Trash2, CheckCircle2, AlertCircle, Snowflake, Refri
 import { format, isAfter, isBefore, addDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
+// Safe date parser
+const safeParseDate = (dateStr: string) => {
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return null;
+    return date;
+  } catch {
+    return null;
+  }
+};
+
 export default function MilkInventory() {
   const { milkStorage, markMilkUsed, deleteLog, loading } = useBabyStore();
 
@@ -16,7 +27,9 @@ export default function MilkInventory() {
   const freezerMilk = activeMilk.filter(m => m.stored_at === 'freezer');
 
   const getExpiryStatus = (dateStr: string) => {
-    const expiry = new Date(dateStr);
+    const expiry = safeParseDate(dateStr);
+    if (!expiry) return { label: 'Không xác định', color: 'text-gray-500', bg: 'bg-gray-50', icon: <AlertCircle className="w-4 h-4" /> };
+    
     const now = new Date();
     const soon = addDays(now, 1);
 
@@ -86,7 +99,12 @@ export default function MilkInventory() {
                       </div>
                       <div className="flex items-center text-xs text-gray-400 mt-1">
                         <Calendar className="w-3 h-3 mr-1" />
-                        Hạn dùng: {format(new Date(item.expires_at), 'dd/MM/yyyy', { locale: vi })}
+                        Hạn dùng: {
+                          (() => {
+                            const parsed = safeParseDate(item.expires_at);
+                            return parsed ? format(parsed, 'dd/MM/yyyy', { locale: vi }) : 'Không xác định';
+                          })()
+                        }
                       </div>
                     </div>
                   </div>

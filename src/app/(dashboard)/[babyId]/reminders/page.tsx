@@ -10,6 +10,15 @@ interface PageProps {
   params: Promise<{ babyId: string }>;
 }
 
+// Safe ISO date parser
+const safeParseISO = (dateStr: string) => {
+  try {
+    return parseISO(dateStr);
+  } catch {
+    return new Date();
+  }
+};
+
 const vitaminPreset = {
   title: 'Vitamin D3+K2',
   type: 'vitamin' as const,
@@ -165,7 +174,7 @@ export default function RemindersPage({ params }: PageProps) {
 
   const reminderStreak = (createdAt?: string) => {
     if (!createdAt) return 'Mới thêm';
-    const days = differenceInCalendarDays(new Date(), parseISO(createdAt)) + 1;
+    const days = differenceInCalendarDays(new Date(), safeParseISO(createdAt)) + 1;
     return `${days} ngày liên tục`;
   };
 
