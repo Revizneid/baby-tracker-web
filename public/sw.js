@@ -49,9 +49,9 @@ self.addEventListener('fetch', (event) => {
     caches.match(request).then((cached) => {
       const fetchPromise = fetch(request.clone(), { redirect: 'follow' }).then(
         (response) => {
-          if (response.status === 200) {
-            const cache = caches.open(CACHE_NAME);
-            cache.then((c) => c.put(request, response.clone()));
+          if (response && response.status === 200) {
+            const responseForCache = response.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(request, responseForCache));
           }
           return response;
         }
