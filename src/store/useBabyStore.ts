@@ -40,7 +40,7 @@ interface BabyState {
   subscribeToLogs: (babyId: string) => () => void;
 }
 
-export const useBabyStore = create((set, get) => ({
+export const useBabyStore: any = create((set, get) => ({
   babies: [],
   currentBaby: null,
   feeds: [],
@@ -304,4 +304,4 @@ export const useBabyStore = create((set, get) => ({
       throw err;
     }
   }
-}) as any;
+}));
