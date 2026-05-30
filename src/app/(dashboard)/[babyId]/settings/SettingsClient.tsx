@@ -35,8 +35,13 @@ export default function SettingsClient({ babyId }: SettingsClientProps) {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Không thể tạo invite');
-      setInviteUrl(json.url);
-      setQrUrl(`https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(json.url)}`);
+      
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const token = json.invite?.token || json.token;
+      const fullInviteUrl = token ? `${baseUrl}/invite/${token}` : json.url;
+
+      setInviteUrl(fullInviteUrl);
+      setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fullInviteUrl)}`);
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -61,15 +66,18 @@ export default function SettingsClient({ babyId }: SettingsClientProps) {
           ) : members.length === 0 ? (
             <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">Chưa có thành viên nào.</div>
           ) : (
-            members.map((m) => (
-              <div key={m.id} className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-3">
-                <div>
-                  <p className="font-semibold text-slate-900">{m.profiles?.[0]?.full_name ?? 'Người dùng'}</p>
-                  <p className="text-xs text-slate-500">{m.role}</p>
+            members.map((m) => {
+              const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+              return (
+                <div key={m.id} className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                  <div>
+                    <p className="font-semibold text-slate-900">{profile?.full_name ?? 'Người dùng'}</p>
+                    <p className="text-xs text-slate-500">{m.role}</p>
+                  </div>
+                  <div className="text-sm text-slate-500">{profile?.id || ''}</div>
                 </div>
-                <div className="text-sm text-slate-500">{m.profiles?.[0]?.id}</div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

@@ -38,12 +38,32 @@ export const familyActions = {
     if (invite.expires_at && new Date(invite.expires_at) < now) {
       throw new Error('Invite has expired');
     }
-    if (invite.used_at) {
-      throw new Error('Invite already used');
-    }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
+
+    // Check if user is already a family member
+    const { data: existingMember } = await supabase
+      .from('family_members')
+      .select('*')
+      .eq('baby_id', invite.baby_id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existingMember) {
+      // Mark invite as used if not already marked
+      if (!invite.used_at) {
+        await supabase
+          .from('family_invites')
+          .update({ used_at: new Date().toISOString() })
+          .eq('id', invite.id);
+      }
+      return existingMember as FamilyMember;
+    }
+
+    if (invite.used_at) {
+      throw new Error('Invite already used');
+    }
 
     // Insert into family_members
     const { data: member, error: insErr } = await supabase
@@ -87,6 +107,14 @@ export const familyActions = {
 
   async getMembers(babyId: string) {
     const supabase = await createServerClient();
+    
+    // Fetch the baby's owner profile first
+    const { data: babyData } = await supabase
+      .from('babies')
+      .select('user_id, profiles(full_name, avatar_url, id)')
+      .eq('id', babyId)
+      .single();
+
     const { data, error } = await supabase
       .from('family_members')
       .select('id, role, created_at, profiles(full_name, avatar_url, id)')
@@ -94,7 +122,28 @@ export const familyActions = {
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return data as Array<{
+
+    const members = (data || []) as any[];
+
+    // Check if owner is already present
+    const hasOwner = members.some(m => {
+      const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+      return m.role === 'owner' || (profile && babyData && profile.id === babyData.user_id);
+    });
+
+    if (!hasOwner && babyData) {
+      const ownerProfile = babyData.profiles;
+      if (ownerProfile) {
+        members.unshift({
+          id: `owner-${babyData.user_id}`,
+          role: 'owner',
+          created_at: new Date().toISOString(),
+          profiles: Array.isArray(ownerProfile) ? ownerProfile : [ownerProfile]
+        });
+      }
+    }
+
+    return members as Array<{
       id: string;
       role: 'owner' | 'member';
       created_at?: string;

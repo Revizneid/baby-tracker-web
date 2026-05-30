@@ -31,23 +31,21 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   
-  // Network-first with timeout for dynamic content
-  if (url.pathname.includes('/api/') || url.hostname !== location.hostname) {
-    event.respondWith(
-      Promise.race([
-        fetch(request.clone(), { redirect: 'follow' }),
-        new Promise((resolve) =>
-          setTimeout(() => resolve(caches.match(request)), 3000)
-        ),
-      ]).catch(() => caches.match(request) || Promise.reject())
-    );
-    return;
-  }
+  // Only handle GET requests for same-origin static assets
+  const isStaticAsset = 
+    url.hostname === location.hostname &&
+    (url.pathname.startsWith('/_next/static/') ||
+     url.pathname.startsWith('/public/') ||
+     url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|gif|ico|woff|woff2|ttf|json|txt)$/) ||
+     url.pathname === '/favicon.ico' ||
+     url.pathname === '/manifest.json');
+
+  if (!isStaticAsset) return;
 
   // Stale-while-revalidate for static assets
   event.respondWith(
     caches.match(request).then((cached) => {
-      const fetchPromise = fetch(request.clone(), { redirect: 'follow' }).then(
+      const fetchPromise = fetch(request.clone()).then(
         (response) => {
           if (response && response.status === 200) {
             const responseForCache = response.clone();
@@ -59,9 +57,6 @@ self.addEventListener('fetch', (event) => {
       return cached || fetchPromise;
     })
     .catch(() => {
-      if (request.headers.get('accept')?.includes('text/html')) {
-        return new Response('Offline', { status: 503 });
-      }
       return Promise.reject();
     })
   );

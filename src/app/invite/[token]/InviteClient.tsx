@@ -131,7 +131,7 @@ export default function InviteClient({ token }: InviteClientProps) {
               </button>
             </div>
             <div>
-              <img src={`https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(inviteUrl)}`} alt="QR invite" className="w-40 h-40 rounded-xl border" />
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inviteUrl)}`} alt="QR invite" className="w-40 h-40 rounded-xl border" />
             </div>
           </div>
         ) : null}

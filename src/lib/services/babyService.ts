@@ -38,6 +38,15 @@ export const babyService = {
       .select()
       .single();
     if (error) throw error;
+
+    // Fallback: manually insert creator as owner into family_members (trigger will also do this)
+    const { error: memberError } = await supabase
+      .from('family_members')
+      .insert([{ baby_id: data.id, user_id: user.id, role: 'owner' }]);
+    if (memberError) {
+      console.log('Owner insert fallback handled:', memberError.message);
+    }
+
     return data as Baby;
   },
 
