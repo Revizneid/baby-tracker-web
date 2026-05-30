@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useBabyStore } from '@/store/useBabyStore';
+import { Baby } from '@/types/database';
 import { LogOut, Plus, ChevronDown, User as UserIcon, Heart, Baby as BabyIcon } from 'lucide-react';
 import AddBabyModal from '@/components/modals/AddBabyModal';
 import { useRouter } from 'next/navigation';
@@ -14,7 +15,7 @@ export default function Header() {
   const [isAddBabyOpen, setIsAddBabyOpen] = useState(false);
   const router = useRouter();
 
-  const handleBabySelect = (baby: any) => {
+  const handleBabySelect = (baby: Baby) => {
     setCurrentBaby(baby);
     setDropdownOpen(false);
     router.push(`/${baby.id}`);

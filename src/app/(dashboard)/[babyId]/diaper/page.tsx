@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, use } from 'react';
+import { DiaperLog } from '@/types/database';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Droplet } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
@@ -40,7 +41,7 @@ export default function DiaperPage({ params }: PageProps) {
   const weekKey = new Date(today.getTime() - 6 * 86400000).toISOString().slice(0, 10);
 
   const filteredDiapers = useMemo(() => {
-    return diapers.filter((diaper) => {
+    return diapers.filter((diaper: DiaperLog) => {
       if (range === 'today') return diaper.date === todayKey;
       if (range === 'yesterday') return diaper.date === yesterdayKey;
       if (range === 'week') return diaper.date >= weekKey;
@@ -103,10 +104,10 @@ export default function DiaperPage({ params }: PageProps) {
 
       <section className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         <LogList
-          logs={filteredDiapers.map((diaper) => ({
-            ...diaper,
-            type: 'diaper' as const,
-          }))}
+          logs={filteredDiapers.map((diaper: DiaperLog) => ({
+              ...diaper,
+              type: 'diaper' as const,
+            }))}
           type="diaper"
           onDelete={(id) => {
             if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {

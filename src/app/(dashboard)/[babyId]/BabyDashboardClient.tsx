@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Baby, FeedLog, SleepLog, DiaperLog } from '@/types/database';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useBabyStore } from '@/store/useBabyStore';
 import { History, Clock, Trash2, BarChart3, Droplets } from 'lucide-react';
@@ -34,7 +35,7 @@ export default function BabyDashboardClient({ babyId }: BabyDashboardClientProps
   // Sync route babyId with Zustand store
   useEffect(() => {
     if (babies.length > 0) {
-      const matchedBaby = babies.find(b => b.id === babyId);
+      const matchedBaby = babies.find((b: Baby) => b.id === babyId);
       if (matchedBaby && currentBaby?.id !== babyId) {
         setCurrentBaby(matchedBaby);
       }
@@ -52,9 +53,9 @@ export default function BabyDashboardClient({ babyId }: BabyDashboardClientProps
 
   // Combine and sort logs for history
   const allLogs = [
-    ...feeds.map(f => ({ ...f, logType: 'feed', icon: '🍼', label: 'Ăn uống', color: 'orange' })),
-    ...sleeps.map(s => ({ ...s, timestamp: s.start_timestamp, logType: 'sleep', icon: '💤', label: 'Ngủ nghỉ', color: 'purple' })),
-    ...diapers.map(d => ({ ...d, logType: 'diaper', icon: '💩', label: 'Vệ sinh', color: 'blue' })),
+    ...feeds.map((f: FeedLog) => ({ ...f, logType: 'feed', icon: '🍼', label: 'Ăn uống', color: 'orange' })),
+    ...sleeps.map((s: SleepLog) => ({ ...s, timestamp: s.start_timestamp, logType: 'sleep', icon: '💤', label: 'Ngủ nghỉ', color: 'purple' })),
+    ...diapers.map((d: DiaperLog) => ({ ...d, logType: 'diaper', icon: '💩', label: 'Vệ sinh', color: 'blue' })),
   ].sort((a, b) => b.timestamp - a.timestamp);
 
   const getLogLabel = (log: any) => {

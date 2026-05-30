@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { subDays, format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useBabyStore } from '@/store/useBabyStore';
+import { PumpingLog, FeedLog, SleepLog, DiaperLog } from '@/types/database';
 import BarChartDay from '@/components/charts/BarChartDay';
 import LineChartGrowth from '@/components/charts/LineChartGrowth';
 import DayDetailCard from '@/components/charts/DayDetailCard';
@@ -41,9 +42,9 @@ export default function ChartsPage() {
     last6Days.forEach((date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
       const label = format(date, 'dd/MM', { locale: vi });
-      const dayLogs = pumpingLogs.filter((log) => log.date === dateStr);
+      const dayLogs = pumpingLogs.filter((log: PumpingLog) => log.date === dateStr);
       const total = dayLogs.reduce(
-        (sum, log) => sum + ((log.left_ml || 0) + (log.right_ml || 0)),
+        (sum: number, log: PumpingLog) => sum + ((log.left_ml || 0) + (log.right_ml || 0)),
         0
       );
       data.push({ dateStr, label, value: total });
@@ -60,8 +61,8 @@ export default function ChartsPage() {
     last6Days.forEach((date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
       const label = format(date, 'dd/MM', { locale: vi });
-      const dayLogs = feeds.filter((log) => log.date === dateStr);
-      const total = dayLogs.reduce((sum, log) => sum + (parseInt(log.amount as string) || 0), 0);
+      const dayLogs = feeds.filter((log: FeedLog) => log.date === dateStr);
+      const total = dayLogs.reduce((sum: number, log: FeedLog) => sum + (parseInt(log.amount as string) || 0), 0);
       data.push({ dateStr, label, value: total });
     });
     return data;
@@ -76,9 +77,9 @@ export default function ChartsPage() {
     last6Days.forEach((date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
       const label = format(date, 'dd/MM', { locale: vi });
-      const dayLogs = sleeps.filter((log) => log.date === dateStr);
+      const dayLogs = sleeps.filter((log: SleepLog) => log.date === dateStr);
       const totalMinutes = dayLogs.reduce(
-        (sum, log) => sum + (log.duration_minutes || 0),
+        (sum: number, log: SleepLog) => sum + (log.duration_minutes || 0),
         0
       );
       const hours = parseFloat((totalMinutes / 60).toFixed(1));
@@ -96,7 +97,7 @@ export default function ChartsPage() {
     last6Days.forEach((date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
       const label = format(date, 'dd/MM', { locale: vi });
-      const dayLogs = diapers.filter((log) => log.date === dateStr);
+      const dayLogs = diapers.filter((log: DiaperLog) => log.date === dateStr);
       data.push({ dateStr, label, value: dayLogs.length });
     });
     return data;

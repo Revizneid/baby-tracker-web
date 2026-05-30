@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, use } from 'react';
 import { useBabyStore } from '@/store/useBabyStore';
+import { Baby } from '@/types/database';
 import LineChartGrowth from '@/components/charts/LineChartGrowth';
 import SkeletonCard from '@/components/ui/SkeletonCard';
 import { format, parseISO, differenceInWeeks } from 'date-fns';
@@ -31,7 +32,7 @@ export default function GrowthPage({ params }: PageProps) {
 
   const pageBaby = useMemo(() => {
     if (currentBaby?.id === babyId) return currentBaby;
-    return babies.find((baby) => baby.id === babyId) ?? null;
+    return babies.find((baby: Baby) => baby.id === babyId) ?? null;
   }, [babyId, babies, currentBaby]);
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);

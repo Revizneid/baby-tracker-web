@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { FeedLog } from '@/types/database';
 import { formatDistanceToNow, format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { ArrowLeft, Plus, Clock, Droplet } from 'lucide-react';
@@ -35,7 +36,7 @@ export default function FeedPage({ params }: PageProps) {
   const weekKey = format(subDays(today, 6), 'yyyy-MM-dd');
 
   const filteredFeeds = useMemo(() => {
-    return feeds.filter((feed) => {
+    return feeds.filter((feed: FeedLog) => {
       if (range === 'today') return feed.date === todayKey;
       if (range === 'yesterday') return feed.date === yesterdayKey;
       if (range === 'week') return feed.date >= weekKey;
@@ -44,7 +45,7 @@ export default function FeedPage({ params }: PageProps) {
   }, [feeds, range, todayKey, yesterdayKey, weekKey]);
 
   const totalMl = useMemo(
-    () => filteredFeeds.reduce((sum, feed) => sum + (Number(feed.amount) || 0), 0),
+    () => filteredFeeds.reduce((sum: number, feed: FeedLog) => sum + (Number(feed.amount) || 0), 0),
     [filteredFeeds]
   );
 
@@ -106,10 +107,10 @@ export default function FeedPage({ params }: PageProps) {
 
       <section className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         <LogList
-          logs={filteredFeeds.map((feed) => ({
-            ...feed,
-            type: 'feed' as const,
-          }))}
+          logs={filteredFeeds.map((feed: FeedLog) => ({
+              ...feed,
+              type: 'feed' as const,
+            }))}
           type="feed"
           onDelete={(id) => {
             if (window.confirm('Bạn có chắc muốn xóa bản ghi này?')) {

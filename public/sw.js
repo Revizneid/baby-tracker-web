@@ -19,15 +19,17 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
+  if (request.mode === 'navigate' || request.redirect === 'manual') return;
+
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
-      return fetch(request)
-        .then((res) => {
-          // Optionally cache new requests
-          return res;
-        })
-        .catch(() => caches.match('/'));
+      return fetch(request.clone(), { redirect: 'follow' }).catch(() => {
+        if (request.headers.get('accept')?.includes('text/html')) {
+          return caches.match('/');
+        }
+        return Promise.reject();
+      });
     })
   );
 });
