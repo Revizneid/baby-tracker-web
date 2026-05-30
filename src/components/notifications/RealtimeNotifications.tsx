@@ -56,7 +56,7 @@ export default function RealtimeNotifications() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table, filter: `baby_id=eq.${currentBaby.id}` },
         (payload) => {
-          const record = payload.record ?? {};
+          const record = payload.new ?? {};
           const isSelfAction = record.user_id && record.user_id === user.id;
 
           if (!isSelfAction) {

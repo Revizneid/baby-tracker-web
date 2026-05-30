@@ -14,13 +14,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport = {
+  themeColor: '#1D9E75',
+};
+
 export const metadata: Metadata = {
   title: {
     default: 'BabyTracker Web',
     template: '%s | BabyTracker',
   },
   description: 'Dõi theo hành trình phát triển của bé yêu bằng nhật ký ăn ngủ, tiêm chủng và chia sẻ cùng gia đình.',
-  themeColor: '#1D9E75',
   icons: {
     icon: '/favicon.ico',
     apple: '/favicon.ico',
