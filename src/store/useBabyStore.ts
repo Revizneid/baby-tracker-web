@@ -37,6 +37,7 @@ interface BabyState {
   deleteWaterLog: (id: string) => Promise<void>;
   markMilkUsed: (id: string) => Promise<void>;
   deleteLog: (table: string, id: string) => Promise<void>;
+  fetchSingleTable: (table: string, babyId: string) => Promise<void>;
   subscribeToLogs: (babyId: string) => () => void;
 }
 
@@ -97,6 +98,33 @@ export const useBabyStore = create<BabyState>((set, get) => ({
     }
   },
 
+  fetchSingleTable: async (table, babyId) => {
+    if (!babyId) return;
+    try {
+      if (table === 'feeds') {
+        const feeds = await babyService.getFeeds(babyId);
+        set({ feeds });
+      } else if (table === 'sleep_logs') {
+        const sleeps = await babyService.getSleepLogs(babyId);
+        set({ sleeps });
+      } else if (table === 'diaper_logs') {
+        const diapers = await babyService.getDiaperLogs(babyId);
+        set({ diapers });
+      } else if (table === 'pumping_logs') {
+        const pumpingLogs = await babyService.getPumpingLogs(babyId);
+        set({ pumpingLogs });
+      } else if (table === 'growth_logs') {
+        const growths = await babyService.getGrowthLogs(babyId);
+        set({ growths });
+      } else if (table === 'milk_storage') {
+        const milkStorage = await babyService.getMilkStorage(babyId);
+        set({ milkStorage });
+      }
+    } catch (err: any) {
+      console.error(`[Store] Error refetching table ${table}:`, err);
+    }
+  },
+
   subscribeToLogs: (babyId: string) => {
     if (!babyId) {
       return () => {};
@@ -108,7 +136,6 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       'diaper_logs',
       'pumping_logs',
       'growth_logs',
-      'water_logs',
       'milk_storage',
     ];
 
@@ -118,7 +145,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table, filter: `baby_id=eq.${babyId}` },
         () => {
-          get().fetchLogs(babyId);
+          get().fetchSingleTable(table, babyId);
         }
       );
     });
@@ -130,6 +157,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       supabase.removeChannel(channel);
     };
   },
+
 
   addFeed: async (feed) => {
     try {

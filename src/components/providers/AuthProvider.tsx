@@ -24,19 +24,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
+    let active = true;
+
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        // Ensure profile exists for logged-in user
-        await ensureProfileExists(session.user.id, session.user.email);
-      }
-      
-      setLoading(false);
-      
-      if (!session && pathname !== '/login') {
-        router.push('/login');
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (active) {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            // Ensure profile exists in the background to prevent blocking UI render
+            ensureProfileExists(session.user.id, session.user.email);
+          }
+        }
+      } catch (error) {
+        console.error('Error during initial session check:', error);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
@@ -44,12 +49,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!active) return;
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (event === 'SIGNED_IN' && session?.user) {
-          // Create profile on first sign in
-          await ensureProfileExists(session.user.id, session.user.email);
+          ensureProfileExists(session.user.id, session.user.email);
           router.push('/');
         } else if (event === 'SIGNED_OUT') {
           router.push('/login');
@@ -60,9 +65,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     return () => {
+      active = false;
       authListener.subscription.unsubscribe();
     };
-  }, [router, pathname]);
+  }, [router]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const isPublicPath = 
+      pathname === '/login' || 
+      pathname.startsWith('/auth/callback') || 
+      pathname.startsWith('/invite/');
+
+    if (!user && !isPublicPath) {
+      router.push('/login');
+    }
+  }, [user, loading, pathname, router]);
+
 
   const ensureProfileExists = async (userId: string, email?: string) => {
     try {
