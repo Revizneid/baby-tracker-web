@@ -1,0 +1,25 @@
+﻿# Project: baby-tracker-web
+
+## Stack
+- (fill in: e.g. React Native / Expo SDK 51 / TypeScript)
+- (fill in: e.g. AsyncStorage for local persistence)
+- (fill in: e.g. React Navigation - Drawer + Bottom Tabs)
+
+## Structure
+- src/screens/   - screen components
+- src/components/ - shared UI components
+- src/utils/     - helpers and constants
+- assets/        - images, fonts
+
+## Key conventions
+- Use createStyles(theme) pattern for dark/light theme
+- AsyncStorage keys prefixed with bt_
+- Navigation: Drawer wraps Tab navigator
+
+## What NOT to do
+- Do not suggest adding a backend (local-only app)
+- Do not rewrite existing working screens from scratch
+- Do not add new dependencies without asking first
+
+## Current focus
+- (fill in what you are working on right now)

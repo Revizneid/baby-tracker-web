@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow, format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { ArrowLeft, Plus, Clock, Moon } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
 import LogModal from '@/components/modals/LogModal';
 import DateFilter from '@/components/logs/DateFilter';
@@ -18,16 +18,16 @@ export default function SleepPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const { babyId } = resolvedParams;
   const router = useRouter();
-  const { currentBaby, sleeps, fetchLogs, deleteLog, loading } = useBabyStore();
+  const { currentBaby, sleeps, fetchSleeps, deleteLog, loadingSleeps } = useBabyStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [range, setRange] = useState<'today' | 'yesterday' | 'week' | 'all'>('today');
 
   useEffect(() => {
     if (!babyId) return;
-    fetchLogs(babyId);
+    fetchSleeps(babyId);
     const unsubscribe = useBabyStore.getState().subscribeToLogs(babyId);
     return () => unsubscribe();
-  }, [babyId, fetchLogs]);
+  }, [babyId, fetchSleeps]);
 
   const today = new Date();
   const todayKey = format(today, 'yyyy-MM-dd');
@@ -117,7 +117,7 @@ export default function SleepPage({ params }: PageProps) {
               deleteLog('sleep_logs', id);
             }
           }}
-          loading={loading}
+          loading={loadingSleeps}
           title="Lịch sử giấc ngủ"
           subtitle="Danh sách giấc ngủ đã ghi nhận"
         />

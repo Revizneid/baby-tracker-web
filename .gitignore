@@ -39,3 +39,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Added by setup_ide_session
+node_modules/
+.pnp.js
+dist/
+build/
+.expo/
+.expo-shared/
+*.apk
+*.aab
+*.ipa
+Thumbs.db
+*.suo
+*.user
+*.log
+.yarn-integrity
+*.tmp
+*.temp
+coverage/
+.nyc_output/
+.env.local
+.env.*.local

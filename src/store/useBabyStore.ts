@@ -17,10 +17,25 @@ interface BabyState {
   loading: boolean;
   error: string | null;
 
+  // Granular loading states
+  loadingFeeds: boolean;
+  loadingSleeps: boolean;
+  loadingDiapers: boolean;
+  loadingGrowths: boolean;
+  loadingReminders: boolean;
+  loadingWaterLogs: boolean;
+  loadingPumpingLogs: boolean;
+  loadingMilkStorage: boolean;
+
   // Actions
   fetchBabies: () => Promise<void>;
   setCurrentBaby: (baby: Baby | null) => void;
   fetchLogs: (babyId: string) => Promise<void>;
+  fetchFeeds: (babyId: string, limit?: number) => Promise<void>;
+  fetchSleeps: (babyId: string, limit?: number) => Promise<void>;
+  fetchDiapers: (babyId: string, limit?: number) => Promise<void>;
+  fetchPumpingLogs: (babyId: string, limit?: number) => Promise<void>;
+  fetchMilkStorage: (babyId: string, limit?: number) => Promise<void>;
   fetchGrowthLogs: (babyId: string) => Promise<void>;
   fetchReminders: (babyId: string) => Promise<void>;
   fetchWaterLogs: () => Promise<void>;
@@ -55,6 +70,15 @@ export const useBabyStore = create<BabyState>((set, get) => ({
   loading: false,
   error: null,
 
+  loadingFeeds: false,
+  loadingSleeps: false,
+  loadingDiapers: false,
+  loadingGrowths: false,
+  loadingReminders: false,
+  loadingWaterLogs: false,
+  loadingPumpingLogs: false,
+  loadingMilkStorage: false,
+
   fetchBabies: async () => {
     set({ loading: true });
     try {
@@ -83,18 +107,76 @@ export const useBabyStore = create<BabyState>((set, get) => ({
 
     set({ loading: true });
     try {
-      const [feeds, sleeps, diapers, growths, reminders, pumpingLogs, milkStorage] = await Promise.all([
-        babyService.getFeeds(babyId),
-        babyService.getSleepLogs(babyId),
-        babyService.getDiaperLogs(babyId),
-        babyService.getGrowthLogs(babyId),
-        babyService.getReminders(babyId),
-        babyService.getPumpingLogs(babyId),
-        babyService.getMilkStorage(babyId),
+      // Fetch only the dashboard essentials with a limit of 50
+      const [feeds, sleeps, diapers] = await Promise.all([
+        babyService.getFeeds(babyId, 50),
+        babyService.getSleepLogs(babyId, 50),
+        babyService.getDiaperLogs(babyId, 50),
       ]);
-      set({ feeds, sleeps, diapers, growths, reminders, pumpingLogs, milkStorage, loading: false, error: null });
-    } catch (err: any) {
-      set({ error: err?.message || 'Không thể tải dữ liệu hoạt động.', loading: false });
+      set({ feeds, sleeps, diapers, loading: false, error: null });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Không thể tải dữ liệu hoạt động.';
+      set({ error: errorMsg, loading: false });
+    }
+  },
+
+  fetchFeeds: async (babyId, limit) => {
+    if (!babyId) return;
+    set({ loadingFeeds: true });
+    try {
+      const feeds = await babyService.getFeeds(babyId, limit);
+      set({ feeds, loadingFeeds: false, error: null });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Không thể tải dữ liệu ăn uống.';
+      set({ error: errorMsg, loadingFeeds: false });
+    }
+  },
+
+  fetchSleeps: async (babyId, limit) => {
+    if (!babyId) return;
+    set({ loadingSleeps: true });
+    try {
+      const sleeps = await babyService.getSleepLogs(babyId, limit);
+      set({ sleeps, loadingSleeps: false, error: null });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Không thể tải dữ liệu giấc ngủ.';
+      set({ error: errorMsg, loadingSleeps: false });
+    }
+  },
+
+  fetchDiapers: async (babyId, limit) => {
+    if (!babyId) return;
+    set({ loadingDiapers: true });
+    try {
+      const diapers = await babyService.getDiaperLogs(babyId, limit);
+      set({ diapers, loadingDiapers: false, error: null });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Không thể tải dữ liệu thay tã.';
+      set({ error: errorMsg, loadingDiapers: false });
+    }
+  },
+
+  fetchPumpingLogs: async (babyId, limit) => {
+    if (!babyId) return;
+    set({ loadingPumpingLogs: true });
+    try {
+      const pumpingLogs = await babyService.getPumpingLogs(babyId, limit);
+      set({ pumpingLogs, loadingPumpingLogs: false, error: null });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Không thể tải dữ liệu hút sữa.';
+      set({ error: errorMsg, loadingPumpingLogs: false });
+    }
+  },
+
+  fetchMilkStorage: async (babyId, limit) => {
+    if (!babyId) return;
+    set({ loadingMilkStorage: true });
+    try {
+      const milkStorage = await babyService.getMilkStorage(babyId, limit);
+      set({ milkStorage, loadingMilkStorage: false, error: null });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Không thể tải dữ liệu kho sữa.';
+      set({ error: errorMsg, loadingMilkStorage: false });
     }
   },
 
@@ -131,23 +213,75 @@ export const useBabyStore = create<BabyState>((set, get) => ({
     }
 
     const trackedTables = [
-      'feeds',
-      'sleep_logs',
-      'diaper_logs',
-      'pumping_logs',
-      'growth_logs',
-      'milk_storage',
+      { name: 'feeds', stateKey: 'feeds' as const },
+      { name: 'sleep_logs', stateKey: 'sleeps' as const },
+      { name: 'diaper_logs', stateKey: 'diapers' as const },
+      { name: 'pumping_logs', stateKey: 'pumpingLogs' as const },
+      { name: 'growth_logs', stateKey: 'growths' as const },
+      { name: 'milk_storage', stateKey: 'milkStorage' as const },
     ];
 
+    const sortState = (key: string, arr: any[]) => {
+      if (key === 'feeds' || key === 'diapers' || key === 'pumpingLogs') {
+        return [...arr].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      }
+      if (key === 'sleeps') {
+        return [...arr].sort((a, b) => (b.start_timestamp || 0) - (a.start_timestamp || 0));
+      }
+      if (key === 'growths') {
+        return [...arr].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      }
+      if (key === 'milkStorage') {
+        return [...arr].sort((a, b) => (a.expires_at || '').localeCompare(b.expires_at || ''));
+      }
+      return arr;
+    };
+
     const channel = supabase.channel(`baby-logs-${babyId}`);
-    trackedTables.forEach((table) => {
-      channel.on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table, filter: `baby_id=eq.${babyId}` },
-        () => {
-          get().fetchSingleTable(table, babyId);
-        }
-      );
+    
+    trackedTables.forEach(({ name: table, stateKey }) => {
+      channel
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table, filter: `baby_id=eq.${babyId}` },
+          (payload) => {
+            const newRecord = payload.new;
+            if (!newRecord) return;
+            set((state) => {
+              const currentList = state[stateKey] as any[];
+              if (currentList.some((item) => item.id === newRecord.id)) return {};
+              return { [stateKey]: sortState(stateKey, [newRecord, ...currentList]) };
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table, filter: `baby_id=eq.${babyId}` },
+          (payload) => {
+            const updatedRecord = payload.new;
+            if (!updatedRecord) return;
+            set((state) => {
+              const currentList = state[stateKey] as any[];
+              const updatedList = currentList.map((item) =>
+                item.id === updatedRecord.id ? updatedRecord : item
+              );
+              return { [stateKey]: sortState(stateKey, updatedList) };
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'DELETE', schema: 'public', table, filter: `baby_id=eq.${babyId}` },
+          (payload) => {
+            const oldRecord = payload.old;
+            if (!oldRecord || !oldRecord.id) return;
+            set((state) => {
+              const currentList = state[stateKey] as any[];
+              const filteredList = currentList.filter((item) => item.id !== oldRecord.id);
+              return { [stateKey]: filteredList };
+            });
+          }
+        );
     });
 
     void channel.subscribe();
@@ -234,12 +368,12 @@ export const useBabyStore = create<BabyState>((set, get) => ({
   },
 
   fetchGrowthLogs: async (babyId) => {
-    set({ loading: true });
+    set({ loadingGrowths: true });
     try {
       const growths = await babyService.getGrowthLogs(babyId);
-      set({ growths, loading: false, error: null });
+      set({ growths, loadingGrowths: false, error: null });
     } catch (err: any) {
-      set({ error: err.message, loading: false });
+      set({ error: err.message, loadingGrowths: false });
       throw err;
     }
   },
@@ -275,23 +409,23 @@ export const useBabyStore = create<BabyState>((set, get) => ({
   },
 
   fetchReminders: async (babyId) => {
-    set({ loading: true });
+    set({ loadingReminders: true });
     try {
       const reminders = await babyService.getReminders(babyId);
-      set({ reminders, loading: false, error: null });
+      set({ reminders, loadingReminders: false, error: null });
     } catch (err: any) {
-      set({ error: err.message, loading: false });
+      set({ error: err.message, loadingReminders: false });
       throw err;
     }
   },
 
   fetchWaterLogs: async () => {
-    set({ loading: true });
+    set({ loadingWaterLogs: true });
     try {
       const waterLogs = await babyService.getWaterLogs();
-      set({ waterLogs, loading: false, error: null });
+      set({ waterLogs, loadingWaterLogs: false, error: null });
     } catch (err: any) {
-      set({ error: err.message, loading: false });
+      set({ error: err.message, loadingWaterLogs: false });
       throw err;
     }
   },

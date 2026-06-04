@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, use } from 'react';
 import { DiaperLog } from '@/types/database';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Droplet } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
 import LogModal from '@/components/modals/LogModal';
 import DateFilter from '@/components/logs/DateFilter';
@@ -24,16 +24,16 @@ export default function DiaperPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const { babyId } = resolvedParams;
   const router = useRouter();
-  const { currentBaby, diapers, fetchLogs, deleteLog, loading } = useBabyStore();
+  const { currentBaby, diapers, fetchDiapers, deleteLog, loadingDiapers } = useBabyStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [range, setRange] = useState<'today' | 'yesterday' | 'week' | 'all'>('today');
 
   useEffect(() => {
     if (!babyId) return;
-    fetchLogs(babyId);
+    fetchDiapers(babyId);
     const unsubscribe = useBabyStore.getState().subscribeToLogs(babyId);
     return () => unsubscribe();
-  }, [babyId, fetchLogs]);
+  }, [babyId, fetchDiapers]);
 
   const today = new Date();
   const todayKey = today.toISOString().slice(0, 10);
@@ -114,7 +114,7 @@ export default function DiaperPage({ params }: PageProps) {
               deleteLog('diaper_logs', id);
             }
           }}
-          loading={loading}
+          loading={loadingDiapers}
           title="Lịch sử thay tã"
           subtitle="Theo dõi trạng thái tã của bé trong ngày"
         />

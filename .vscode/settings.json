@@ -1,0 +1,30 @@
+﻿{
+    "files.watcherExclude":  {
+                                 "**/node_modules/**":  true,
+                                 "**/.expo/**":  true,
+                                 "**/.expo-shared/**":  true,
+                                 "**/dist/**":  true,
+                                 "**/build/**":  true,
+                                 "**/coverage/**":  true,
+                                 "**/.git/objects/**":  true,
+                                 "**/.git/subtree-cache/**":  true
+                             },
+    "files.exclude":  {
+                          "**/.git":  true,
+                          "**/node_modules":  true,
+                          "**/.expo":  true,
+                          "**/dist":  true,
+                          "**/build":  true
+                      },
+    "search.exclude":  {
+                           "**/node_modules":  true,
+                           "**/dist":  true,
+                           "**/build":  true,
+                           "**/.expo":  true,
+                           "**/coverage":  true
+                       },
+    "files.hotExit":  "onExitAndWindowClose",
+    "window.restoreWindows":  "folders",
+    "workbench.editor.restoreViewState":  true,
+    "editor.formatOnSave":  false
+}

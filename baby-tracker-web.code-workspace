@@ -1,0 +1,11 @@
+﻿{
+    "folders":  [
+                    {
+                        "path":  "."
+                    }
+                ],
+    "settings":  {
+                     "files.hotExit":  "onExitAndWindowClose",
+                     "window.restoreWindows":  "folders"
+                 }
+}

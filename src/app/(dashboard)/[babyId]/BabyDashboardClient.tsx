@@ -19,10 +19,10 @@ interface BabyDashboardClientProps {
 }
 
 export default function BabyDashboardClient({ babyId }: BabyDashboardClientProps) {
-  const { user } = useAuth();
   const { 
-    babies, currentBaby, setCurrentBaby, loading, 
-    feeds, sleeps, diapers, deleteLog, fetchLogs
+    babies, currentBaby, setCurrentBaby, 
+    feeds, sleeps, diapers, deleteLog, fetchLogs,
+    fetchPumpingLogs, fetchMilkStorage
   } = useBabyStore();
   
   const [isPumpingOpen, setIsPumpingOpen] = useState(false);
@@ -50,6 +50,14 @@ export default function BabyDashboardClient({ babyId }: BabyDashboardClientProps
       return () => unsubscribe();
     }
   }, [babyId, fetchLogs]);
+
+  // Lazy load milk storage logs when the tab is selected
+  useEffect(() => {
+    if (activeTab === 'milk' && babyId) {
+      fetchPumpingLogs(babyId);
+      fetchMilkStorage(babyId);
+    }
+  }, [activeTab, babyId, fetchPumpingLogs, fetchMilkStorage]);
 
   // Combine and sort logs for history
   const allLogs = [
@@ -163,7 +171,7 @@ export default function BabyDashboardClient({ babyId }: BabyDashboardClientProps
                           <Clock className="w-3 h-3 mr-1" />
                           {log.time} • {new Date(log.date).toLocaleDateString('vi-VN')}
                         </div>
-                        {log.note && <p className="text-xs sm:text-sm text-gray-400 mt-1 italic line-clamp-1">"{log.note}"</p>}
+                        {log.note && <p className="text-xs sm:text-sm text-gray-400 mt-1 italic line-clamp-1">&ldquo;{log.note}&rdquo;</p>}
                       </div>
                     </div>
                     <button 

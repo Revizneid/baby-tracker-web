@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FeedLog } from '@/types/database';
 import { formatDistanceToNow, format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { ArrowLeft, Plus, Clock, Droplet } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
 import LogModal from '@/components/modals/LogModal';
 import DateFilter from '@/components/logs/DateFilter';
@@ -19,16 +19,16 @@ export default function FeedPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const { babyId } = resolvedParams;
   const router = useRouter();
-  const { currentBaby, feeds, fetchLogs, deleteLog, loading } = useBabyStore();
+  const { currentBaby, feeds, fetchFeeds, deleteLog, loadingFeeds } = useBabyStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [range, setRange] = useState<'today' | 'yesterday' | 'week' | 'all'>('today');
 
   useEffect(() => {
     if (!babyId) return;
-    fetchLogs(babyId);
+    fetchFeeds(babyId);
     const unsubscribe = useBabyStore.getState().subscribeToLogs(babyId);
     return () => unsubscribe();
-  }, [babyId, fetchLogs]);
+  }, [babyId, fetchFeeds]);
 
   const today = new Date();
   const todayKey = format(today, 'yyyy-MM-dd');
@@ -117,7 +117,7 @@ export default function FeedPage({ params }: PageProps) {
               deleteLog('feeds', id);
             }
           }}
-          loading={loading}
+          loading={loadingFeeds}
           title="Lịch sử bú/ăn"
           subtitle="Xem lại cữ bú, loại sữa và ghi chú"
         />

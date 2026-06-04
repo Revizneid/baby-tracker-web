@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Droplet, Refrigerator, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useBabyStore } from '@/store/useBabyStore';
 import PumpingModal from '@/components/modals/PumpingModal';
 import DateFilter from '@/components/logs/DateFilter';
@@ -15,16 +15,16 @@ export default function PumpPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const { babyId } = resolvedParams;
   const router = useRouter();
-  const { currentBaby, pumpingLogs, fetchLogs, deleteLog, loading } = useBabyStore();
+  const { currentBaby, pumpingLogs, fetchPumpingLogs, deleteLog, loadingPumpingLogs } = useBabyStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [range, setRange] = useState<'today' | 'yesterday' | 'week' | 'all'>('today');
 
   useEffect(() => {
     if (!babyId) return;
-    fetchLogs(babyId);
+    fetchPumpingLogs(babyId);
     const unsubscribe = useBabyStore.getState().subscribeToLogs(babyId);
     return () => unsubscribe();
-  }, [babyId, fetchLogs]);
+  }, [babyId, fetchPumpingLogs]);
 
   const today = new Date();
   const todayKey = today.toISOString().slice(0, 10);
@@ -102,7 +102,7 @@ export default function PumpPage({ params }: PageProps) {
             <h3 className="text-lg font-bold text-gray-900">Lịch sử hút sữa</h3>
             <p className="text-sm text-gray-500">Theo dõi lượng sữa hút và kho sữa.</p>
           </div>
-          {loading && <span className="text-sm text-gray-400">Đang tải...</span>}
+          {loadingPumpingLogs && <span className="text-sm text-gray-400">Đang tải...</span>}
         </div>
         {filteredPumps.length === 0 ? (
           <div className="p-10 text-center text-gray-400">Chưa có lần hút nào trong khoảng thời gian này. Thêm để ghi lại.</div>

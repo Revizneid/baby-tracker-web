@@ -152,12 +152,18 @@ export const babyService = {
   // =========================================================================
   // FEEDS (Note: Keeps existing feeds table name)
   // =========================================================================
-  async getFeeds(babyId: string) {
-    const { data, error } = await supabase
+  async getFeeds(babyId: string, limit?: number) {
+    let query = supabase
       .from('feeds')
       .select('*')
       .eq('baby_id', babyId)
       .order('timestamp', { ascending: false });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data as FeedLog[];
   },
@@ -178,12 +184,18 @@ export const babyService = {
   // =========================================================================
   // SLEEP LOGS
   // =========================================================================
-  async getSleepLogs(babyId: string) {
-    const { data, error } = await supabase
+  async getSleepLogs(babyId: string, limit?: number) {
+    let query = supabase
       .from('sleep_logs')
       .select('*')
       .eq('baby_id', babyId)
       .order('start_timestamp', { ascending: false });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data as SleepLog[];
   },
@@ -204,12 +216,18 @@ export const babyService = {
   // =========================================================================
   // DIAPER LOGS
   // =========================================================================
-  async getDiaperLogs(babyId: string) {
-    const { data, error } = await supabase
+  async getDiaperLogs(babyId: string, limit?: number) {
+    let query = supabase
       .from('diaper_logs')
       .select('*')
       .eq('baby_id', babyId)
       .order('timestamp', { ascending: false });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data as DiaperLog[];
   },
@@ -256,12 +274,18 @@ export const babyService = {
   // =========================================================================
   // PUMPING LOGS (Note: Keeps existing pumping_logs table name)
   // =========================================================================
-  async getPumpingLogs(babyId: string) {
-    const { data, error } = await supabase
+  async getPumpingLogs(babyId: string, limit?: number) {
+    let query = supabase
       .from('pumping_logs')
       .select('*')
       .eq('baby_id', babyId)
       .order('timestamp', { ascending: false });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data as PumpingLog[];
   },
@@ -282,12 +306,18 @@ export const babyService = {
   // =========================================================================
   // MILK STORAGE
   // =========================================================================
-  async getMilkStorage(babyId: string) {
-    const { data, error } = await supabase
+  async getMilkStorage(babyId: string, limit?: number) {
+    let query = supabase
       .from('milk_storage')
       .select('*')
       .eq('baby_id', babyId)
       .order('expires_at', { ascending: true });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data as MilkStorage[];
   },
